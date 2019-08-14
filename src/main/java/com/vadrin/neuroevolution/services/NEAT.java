@@ -1,8 +1,10 @@
 package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
@@ -56,7 +58,7 @@ public class NEAT {
 		this.outputNodesSize = outputNodesSize;
 		loadAllGenomesWithInputOutputNodeGenesAndEmptyConnectionGenes();
 	}
-	
+
 	public void process() {
 		fitBattle();
 		speciate();
@@ -74,37 +76,39 @@ public class NEAT {
 	}
 
 	public void mutate() {
+		Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 		Iterator<Genome> iterator = genomes.iterator();
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			Arrays.asList(MutationType.class.getEnumConstants()).stream()
-					.forEach((mutationType) -> mutate(genome, mutationType));
+					.forEach((mutationType) -> mutate(genome, mutationType, luckyConnectionGenesInThisGeneration));
 		}
 	}
-	
+
 	public void crossOver() {
-		
+
 	}
 
 	private Genome crossOver(Genome genomeOne, Genome genomeTwo) {
 		return genomeTwo;
 	}
-	
+
 	public void select() {
-		
-	}
-	
-	public void fitBattle() {
-		
+
 	}
 
-	private void mutate(Genome genome, MutationType mutationType) {
+	public void fitBattle() {
+
+	}
+
+	private void mutate(Genome genome, MutationType mutationType,
+			Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration) {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
 			mutationAddConnectionGene(genome);
 			break;
 		case ADDNODEGENE:
-			mutationAddNodeGene(genome);
+			mutationAddNodeGene(genome, luckyConnectionGenesInThisGeneration);
 			break;
 		case ALTERWEIGHTOFCONNECTIONGENE:
 			mutationAlterWeightOfConnectionGene(genome);
@@ -136,16 +140,32 @@ public class NEAT {
 		});
 	}
 
-	private void mutationAddNodeGene(Genome genome) {
+	private void mutationAddNodeGene(Genome genome,
+			Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration) {
 		genome.getConnectionGenes().forEach((connectionGene) -> {
 			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
+				NodeGene newNodeGene;
+				if (luckyConnectionGenesInThisGeneration.keySet().stream()
+						.anyMatch((oneOfLuckyConnectionGene) -> oneOfLuckyConnectionGene
+								.getFromReferenceNodeNumber() == connectionGene.getFromReferenceNodeNumber()
+								&& oneOfLuckyConnectionGene.getToReferenceNodeNumber() == connectionGene
+										.getToReferenceNodeNumber())) {
+					newNodeGene = new NodeGene(
+							luckyConnectionGenesInThisGeneration.get(connectionGene).getReferenceNodeNumber(),
+							luckyConnectionGenesInThisGeneration.get(connectionGene).getType());
+				} else {
+					newNodeGene = constructNewNodeGene();
+					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
+				}
+				genome.getNodeGenes().add(newNodeGene);
 				// This connection will get a new node in between now.
-				NodeGene newNodeGene = constructNewNodeGene();
 				connectionGene.setEnabled(false);
-				constructNewConnectionGene(1.0, true, connectionGene.getFromReferenceNodeNumber(),
-						newNodeGene.getReferenceNodeNumber());
-				constructNewConnectionGene(connectionGene.getWeight(), true, newNodeGene.getReferenceNodeNumber(),
-						connectionGene.getToReferenceNodeNumber());
+				ConnectionGene firstHalf = constructNewConnectionGene(1.0, true,
+						connectionGene.getFromReferenceNodeNumber(), newNodeGene.getReferenceNodeNumber());
+				ConnectionGene secondHalf = constructNewConnectionGene(connectionGene.getWeight(), true,
+						newNodeGene.getReferenceNodeNumber(), connectionGene.getToReferenceNodeNumber());
+				genome.getConnectionGenes().add(firstHalf);
+				genome.getConnectionGenes().add(secondHalf);
 			}
 		});
 	}
@@ -165,8 +185,10 @@ public class NEAT {
 				// To make sure we dont join input to input or output to output
 				if ((from.getType() != to.getType())
 						|| (from.getType() == to.getType() && from.getType() == NodeGeneType.HIDDEN)) {
-					constructNewConnectionGene(randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), true,
+					ConnectionGene toAdd = constructNewConnectionGene(
+							randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), true,
 							from.getReferenceNodeNumber(), to.getReferenceNodeNumber());
+					genome.getConnectionGenes().add(toAdd);
 				}
 			}
 		}
