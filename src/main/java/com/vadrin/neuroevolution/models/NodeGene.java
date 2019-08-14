@@ -2,15 +2,21 @@ package com.vadrin.neuroevolution.models;
 
 public class NodeGene extends Gene {
 
-	private NodeGeneTemplate nodeGeneTemplate;
+	private int referenceNodeNumber;
+	private NodeGeneType type;
 
-	public NodeGene(NodeGeneTemplate nodeGeneTemplate) {
-		super();
-		this.nodeGeneTemplate = nodeGeneTemplate;
+	public NodeGeneType getType() {
+		return type;
 	}
 
-	public NodeGeneTemplate getNodeGeneTemplate() {
-		return nodeGeneTemplate;
+	public int getReferenceNodeNumber() {
+		return referenceNodeNumber;
+	}
+
+	public NodeGene(int referenceNodeKey, NodeGeneType type) {
+		super();
+		this.referenceNodeNumber = referenceNodeKey;
+		this.type = type;
 	}
 
 }
