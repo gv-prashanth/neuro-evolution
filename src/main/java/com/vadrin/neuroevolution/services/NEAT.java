@@ -1,13 +1,16 @@
 package com.vadrin.neuroevolution.services;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
@@ -38,15 +41,16 @@ public class NEAT {
 	private static final double CHANCEFORWEIGHTMUTATIONWITHSMALLPERTUBED = 1
 			- CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT;
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05;
-	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75; // 0.8 MEANS 80%
-	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25; // 0.8 MEANS 80%
+	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75; // 0.75 MEANS 75%
+	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25; // 0.25 MEANS 25%
 	private static final double CHANCEFORINTERSPECIESMATING = 0.001;
 	private static final double CHANCEFORADDINGNEWNODE = 0.03;
 	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03;
 	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05;
 	private static final double RANDOMWEIGHTLOWERBOUND = -2;
 	private static final double RANDOMWEIGHTUPPERBOUND = -2;
-
+	private static final int NUMBEROFCHAMPIONSTOSELECTINEACHSPECIES = 5;
+	
 	public NEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
 		super();
 		this.referenceInnovationCounter = 1;
@@ -60,18 +64,99 @@ public class NEAT {
 
 	public void process() {
 		fitBattle();
-		speciate();
-		select();
+		speciate();// done
+		select();// done
 		crossOver();
-		mutate();
+		mutate();// done
 	}
 
 	public void speciate() {
 		Iterator<Genome> iterator = genomes.iterator();
+		Map<Genome, String> speciesIdToGenomeMap = new HashMap<Genome, String>();
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
-			genome.setSpeciesId("TODBABY");
+			try {
+				genome.setSpeciesId(speciesIdToGenomeMap.get(speciesIdToGenomeMap.keySet().stream()
+						.filter(genomeFromMap -> areSameSpecies(genomeFromMap, genome)).findFirst().get()));
+			} catch (NoSuchElementException e) {
+				genome.setSpeciesId(UUID.randomUUID().toString());
+				speciesIdToGenomeMap.put(genome, genome.getSpeciesId());
+			}
 		}
+	}
+
+	private boolean areSameSpecies(Genome genome1, Genome genome2) {
+		ConnectionGene[] connectionGenes1 = new ConnectionGene[genome1.getConnectionGenes().size()];
+		connectionGenes1 = genome1.getConnectionGenes().toArray(connectionGenes1);
+		ConnectionGene[] connectionGenes2 = new ConnectionGene[genome2.getConnectionGenes().size()];
+		connectionGenes2 = genome2.getConnectionGenes().toArray(connectionGenes2);
+
+		Arrays.sort(connectionGenes1,
+				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
+		Arrays.sort(connectionGenes2,
+				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
+
+		if (connectionGenes1.length > 2 && connectionGenes1[0].getReferenceInnovationNumber() > connectionGenes1[1]
+				.getReferenceInnovationNumber()) {
+			System.out.println("BIG TROUBLE!!!!!!!!!!!!!!!");
+		}
+
+		if (connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()) {
+			ConnectionGene[] temp = connectionGenes1;
+			connectionGenes1 = connectionGenes2;
+			connectionGenes2 = temp;
+		}
+
+		// post this line, connectiongene1 is having smaller max innovation when
+		// compared to that of connectiongene2
+		int connectionGene1MaxInnovationNumber = connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber();
+
+		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()
+								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()
+								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+		Arrays.asList(connectionGenes1).stream()
+				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
+						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
+		Arrays.asList(connectionGenes2).stream()
+				.forEach(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
+						.getReferenceInnovationNumber()] = thisConnectionGene2Entry);
+
+		double E = 0;
+		double D = 0;
+		double W = 0;
+		double w = 0;
+		double N = connectionGenes2.length < 20 ? 1 : connectionGenes2.length;
+
+		for (int i = 0; i < ConnectionGeneMostlyEmpty1.length; i++) {
+			if (ConnectionGeneMostlyEmpty1[i] != null && ConnectionGeneMostlyEmpty2[i] != null) {
+				w++;
+				W = W + (ConnectionGeneMostlyEmpty1[i].getWeight() - ConnectionGeneMostlyEmpty2[i].getWeight());
+			}
+			if ((ConnectionGeneMostlyEmpty1[i] == null && ConnectionGeneMostlyEmpty2[i] != null)
+					|| (ConnectionGeneMostlyEmpty2[i] == null && ConnectionGeneMostlyEmpty1[i] != null)) {
+				if (i < connectionGene1MaxInnovationNumber) {
+					D++;
+				} else {
+					E++;
+				}
+			}
+		}
+
+		// Average weight difference
+		W = W / w;
+
+		double deltaScore = ((C1 * E) / N) + ((C2 * D) / N) + C3 * W;
+		return deltaScore < DELTAT;
 	}
 
 	public void mutate() {
@@ -89,15 +174,44 @@ public class NEAT {
 	}
 
 	private Genome crossOver(Genome genomeOne, Genome genomeTwo) {
-		return genomeTwo;
+		return null;
 	}
 
 	public void select() {
-
+		// Select the top X in each species
+		// To start lets make the list of each species
+		Iterator<Genome> iterator = genomes.iterator();
+		Map<String, List<Genome>> soFarTop = new HashMap<String, List<Genome>>();
+		while (iterator.hasNext()) {
+			Genome thisGenome = iterator.next();
+			String speciesId = thisGenome.getSpeciesId();
+			if (soFarTop.containsKey(speciesId)) {
+				// Species already has a map so add
+				soFarTop.get(speciesId).add(thisGenome);
+			} else {
+				List<Genome> single = new ArrayList<Genome>();
+				single.add(thisGenome);
+				soFarTop.put(speciesId, single);
+			}
+		}
+		// sort within each species
+		soFarTop.keySet().forEach(thisSpeciesId -> {
+			soFarTop.get(thisSpeciesId).sort((a, b) -> Double.compare(a.getFitnessScore(), b.getFitnessScore()));
+		});
+		// Now what? -- Pick the top X
+		// and DELETE the others
+		// If yes how many to delete? and what to do after deleting?
+		
+		Set<Genome> toReturn = new HashSet<Genome>();
+		soFarTop.keySet().forEach(thisSpeciesId -> {
+			List<Genome> allGenomesInthisSpecies = soFarTop.get(thisSpeciesId);
+			toReturn.addAll(allGenomesInthisSpecies.subList(0, NUMBEROFCHAMPIONSTOSELECTINEACHSPECIES));
+		});
+		genomes = toReturn;
 	}
 
 	public void fitBattle() {
-		
+
 	}
 
 	private void mutate(Genome genome, MutationType mutationType,
