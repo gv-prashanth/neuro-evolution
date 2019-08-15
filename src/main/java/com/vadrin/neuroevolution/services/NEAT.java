@@ -22,11 +22,10 @@ public class NEAT {
 	private int referenceInnovationCounter;
 	private int referenceNodeCounter;
 
-	private final int poolSize;
+	private final int poolSize; // Use 150 for all practical purposes
 	private final int inputNodesSize;
 	private final int outputNodesSize;
 
-	private static final int POPSIZE = 150;// needs to be depricated and used from constructed
 	private static final double C1 = 1.0;
 	private static final double C2 = 1.0;
 	private static final double C3 = 0.4;
@@ -81,7 +80,7 @@ public class NEAT {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			Arrays.asList(MutationType.class.getEnumConstants()).stream()
-					.forEach((mutationType) -> mutate(genome, mutationType, luckyConnectionGenesInThisGeneration));
+					.forEach(mutationType -> mutate(genome, mutationType, luckyConnectionGenesInThisGeneration));
 		}
 	}
 
@@ -98,7 +97,7 @@ public class NEAT {
 	}
 
 	public void fitBattle() {
-
+		
 	}
 
 	private void mutate(Genome genome, MutationType mutationType,
@@ -120,7 +119,7 @@ public class NEAT {
 	}
 
 	private void mutationEnableDisableConnectionGene(Genome genome) {
-		genome.getConnectionGenes().forEach((connectionGene) -> {
+		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORTOGGLEENABLEDISABLE)) {
 				connectionGene.setEnabled(!connectionGene.isEnabled());
 			}
@@ -128,7 +127,7 @@ public class NEAT {
 	}
 
 	private void mutationAlterWeightOfConnectionGene(Genome genome) {
-		genome.getConnectionGenes().forEach((connectionGene) -> {
+		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
 				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
 					connectionGene.setWeight(randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
@@ -142,11 +141,11 @@ public class NEAT {
 
 	private void mutationAddNodeGene(Genome genome,
 			Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration) {
-		genome.getConnectionGenes().forEach((connectionGene) -> {
+		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
 				NodeGene newNodeGene;
 				if (luckyConnectionGenesInThisGeneration.keySet().stream()
-						.anyMatch((oneOfLuckyConnectionGene) -> oneOfLuckyConnectionGene
+						.anyMatch(oneOfLuckyConnectionGene -> oneOfLuckyConnectionGene
 								.getFromReferenceNodeNumber() == connectionGene.getFromReferenceNodeNumber()
 								&& oneOfLuckyConnectionGene.getToReferenceNodeNumber() == connectionGene
 										.getToReferenceNodeNumber())) {
@@ -172,7 +171,7 @@ public class NEAT {
 
 	private void mutationAddConnectionGene(Genome genome) {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
-		genome.getNodeGenes().forEach((nodeGene) -> {
+		genome.getNodeGenes().forEach(nodeGene -> {
 			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
 				luckyPairs.add(nodeGene);
 			}
@@ -252,7 +251,7 @@ public class NEAT {
 			try {
 				Genome genome = iterator.next();
 				return genome.getConnectionGenes().stream().filter(
-						(connectionGene) -> (connectionGene.getFromReferenceNodeNumber() == fromReferenceNodeNumber
+						connectionGene -> (connectionGene.getFromReferenceNodeNumber() == fromReferenceNodeNumber
 								&& connectionGene.getToReferenceNodeNumber() == toReferenceNodeNumber))
 						.findAny().get().getReferenceInnovationNumber();
 			} catch (NoSuchElementException e) {
