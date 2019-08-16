@@ -64,10 +64,15 @@ public class NEAT {
 	}
 
 	public void process() {
+		//run a test and update the fitness scores for each genome
 		fitBattle();
+		//populate the species id for each genome
 		speciate();// done
+		//Top 50% of genomes in each species are selected.
 		select();// done
+		//within the species select two random parents are re populate the pool
 		crossOver();
+		//mutate the ONLY NEW ONES OR ALL???
 		mutate();// done
 	}
 
