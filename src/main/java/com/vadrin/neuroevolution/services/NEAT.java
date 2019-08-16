@@ -29,28 +29,29 @@ public class NEAT {
 	private final int inputNodesSize;
 	private final int outputNodesSize;
 
-	private static final double C1 = 1.0;
-	private static final double C2 = 1.0;
-	private static final double C3 = 0.4;
-	private static final double DELTAT = 3.0;
+	private static final double C1 = 1.0d;
+	private static final double C2 = 1.0d;
+	private static final double C3 = 0.4d;
+	private static final double DELTAT = 3.0d;
 	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
 	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUSMING GENOMES IN SPECIES IS
 																						// > 5
-	private static final double CHANCEFORWEIGHTMUTATION = 0.8; // 0.8 MEANS 80%
-	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1; // 0.1 MEANS 10%
+	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
+	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHSMALLPERTUBED = 1
 			- CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT;
-	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05;
-	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75; // 0.75 MEANS 75%
-	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25; // 0.25 MEANS 25%
-	private static final double CHANCEFORINTERSPECIESMATING = 0.001;
-	private static final double CHANCEFORADDINGNEWNODE = 0.03;
-	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03;
-	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05;
-	private static final double RANDOMWEIGHTLOWERBOUND = -2;
-	private static final double RANDOMWEIGHTUPPERBOUND = -2;
-	private static final int NUMBEROFCHAMPIONSTOSELECTINEACHSPECIES = 5;
-	
+	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
+	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
+	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
+	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
+	private static final double CHANCEFORADDINGNEWNODE = 0.03d;
+	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
+	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
+	private static final double RANDOMWEIGHTLOWERBOUND = -2d;
+	private static final double RANDOMWEIGHTUPPERBOUND = -2d;
+	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
+	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
+
 	public NEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
 		super();
 		this.referenceInnovationCounter = 1;
@@ -173,8 +174,147 @@ public class NEAT {
 
 	}
 
-	private Genome crossOver(Genome genomeOne, Genome genomeTwo) {
-		return null;
+	private Genome crossOver(Genome genome1, Genome genome2) {
+		ConnectionGene[] connectionGenes1 = new ConnectionGene[genome1.getConnectionGenes().size()];
+		connectionGenes1 = genome1.getConnectionGenes().toArray(connectionGenes1);
+		ConnectionGene[] connectionGenes2 = new ConnectionGene[genome2.getConnectionGenes().size()];
+		connectionGenes2 = genome2.getConnectionGenes().toArray(connectionGenes2);
+
+		Arrays.sort(connectionGenes1,
+				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
+		Arrays.sort(connectionGenes2,
+				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
+
+		// TODO: Need to remove the below useless lines of code
+		if (connectionGenes1.length > 2 && connectionGenes1[0].getReferenceInnovationNumber() > connectionGenes1[1]
+				.getReferenceInnovationNumber()) {
+			System.out.println("BIG TROUBLE!!!!!!!!!!!!!!!");
+		}
+
+		if (connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()) {
+			ConnectionGene[] temp = connectionGenes1;
+			connectionGenes1 = connectionGenes2;
+			connectionGenes2 = temp;
+
+			Genome tempGenome = genome1;
+			genome1 = genome2;
+			genome2 = tempGenome;
+		}
+
+		// post this line, connectiongene1 is having smaller max innovation when
+		// compared to that of connectiongene2. So is the case with genom1 & genom2
+		// variables
+		int connectionGene1MaxInnovationNumber = connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber();
+
+		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()
+								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
+						.getReferenceInnovationNumber()
+								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+		Arrays.asList(connectionGenes1).stream()
+				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
+						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
+		Arrays.asList(connectionGenes2).stream()
+				.forEach(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
+						.getReferenceInnovationNumber()] = thisConnectionGene2Entry);
+
+		Set<ConnectionGene> connectionGenesOfNewGene = new HashSet<ConnectionGene>();
+
+		for (int i = 0; i < ConnectionGeneMostlyEmpty1.length; i++) {
+			if (ConnectionGeneMostlyEmpty1[i] != null && ConnectionGeneMostlyEmpty2[i] != null) {
+				// Both present so Pick one of connectionGene
+				ConnectionGene toAdd;
+				if (ConnectionGeneMostlyEmpty1[i].isLucky(CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT)) {
+					toAdd = new ConnectionGene(ConnectionGeneMostlyEmpty1[i].getWeight(),
+							ConnectionGeneMostlyEmpty1[i].isEnabled(),
+							ConnectionGeneMostlyEmpty1[i].getFromReferenceNodeNumber(),
+							ConnectionGeneMostlyEmpty1[i].getToReferenceNodeNumber(),
+							ConnectionGeneMostlyEmpty1[i].getReferenceInnovationNumber());
+				} else {
+					toAdd = new ConnectionGene(ConnectionGeneMostlyEmpty2[i].getWeight(),
+							ConnectionGeneMostlyEmpty2[i].isEnabled(),
+							ConnectionGeneMostlyEmpty2[i].getFromReferenceNodeNumber(),
+							ConnectionGeneMostlyEmpty2[i].getToReferenceNodeNumber(),
+							ConnectionGeneMostlyEmpty2[i].getReferenceInnovationNumber());
+				}
+
+				if (!ConnectionGeneMostlyEmpty1[i].isEnabled() && !ConnectionGeneMostlyEmpty2[i].isEnabled()
+						&& toAdd.isLucky(1 - CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS)) {
+					toAdd.setEnabled(true);
+				}
+				connectionGenesOfNewGene.add(toAdd);
+			}
+			if ((ConnectionGeneMostlyEmpty1[i] == null && ConnectionGeneMostlyEmpty2[i] != null)
+					|| (ConnectionGeneMostlyEmpty2[i] == null && ConnectionGeneMostlyEmpty1[i] != null)) {
+				ConnectionGene toAdd;
+				if (i < connectionGene1MaxInnovationNumber) {
+					// disjoing genes
+					if (ConnectionGeneMostlyEmpty1[i] != null) {
+						toAdd = new ConnectionGene(ConnectionGeneMostlyEmpty1[i].getWeight(),
+								ConnectionGeneMostlyEmpty1[i].isEnabled(),
+								ConnectionGeneMostlyEmpty1[i].getFromReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty1[i].getToReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty1[i].getReferenceInnovationNumber());
+					} else {
+						toAdd = new ConnectionGene(ConnectionGeneMostlyEmpty2[i].getWeight(),
+								ConnectionGeneMostlyEmpty2[i].isEnabled(),
+								ConnectionGeneMostlyEmpty2[i].getFromReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty2[i].getToReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty2[i].getReferenceInnovationNumber());
+					}
+				} else {
+					// excess genes. Pick only if excess is in max fit parent
+					if (genome2.getFitnessScore() > genome1.getFitnessScore()) {
+						toAdd = new ConnectionGene(ConnectionGeneMostlyEmpty2[i].getWeight(),
+								ConnectionGeneMostlyEmpty2[i].isEnabled(),
+								ConnectionGeneMostlyEmpty2[i].getFromReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty2[i].getToReferenceNodeNumber(),
+								ConnectionGeneMostlyEmpty2[i].getReferenceInnovationNumber());
+					}
+				}
+			}
+		}
+		Set<NodeGene> nodeGenesOfNewGene = new HashSet<NodeGene>();
+		Iterator<ConnectionGene> cgng = connectionGenesOfNewGene.iterator();
+		while (cgng.hasNext()) {
+			ConnectionGene thisConnG = cgng.next();
+			if (!contains(nodeGenesOfNewGene, thisConnG.getFromReferenceNodeNumber()))
+				nodeGenesOfNewGene.add(new NodeGene(thisConnG.getFromReferenceNodeNumber(), getNodeTypeOfThisRefNumber(
+						genome1.getNodeGenes(), genome2.getNodeGenes(), thisConnG.getFromReferenceNodeNumber())));
+			if (!contains(nodeGenesOfNewGene, thisConnG.getToReferenceNodeNumber()))
+				nodeGenesOfNewGene.add(new NodeGene(thisConnG.getToReferenceNodeNumber(), getNodeTypeOfThisRefNumber(
+						genome1.getNodeGenes(), genome2.getNodeGenes(), thisConnG.getToReferenceNodeNumber())));
+		}
+		return new Genome(nodeGenesOfNewGene, connectionGenesOfNewGene);
+	}
+
+	private NodeGeneType getNodeTypeOfThisRefNumber(Set<NodeGene> nodeGenes, Set<NodeGene> nodeGenes2,
+			int referenceNodeNumber) {
+		try {
+			return nodeGenes.stream().filter(ng -> ng.getReferenceNodeNumber() == referenceNodeNumber).findFirst().get()
+					.getType();
+		} catch (NoSuchElementException e) {
+			return nodeGenes2.stream().filter(ng -> ng.getReferenceNodeNumber() == referenceNodeNumber).findFirst()
+					.get().getType();
+		}
+	}
+
+	private boolean contains(Set<NodeGene> nodeGenesOfNewGene, int refNum) {
+		Iterator<NodeGene> iteratorN = nodeGenesOfNewGene.iterator();
+		while (iteratorN.hasNext()) {
+			if (iteratorN.next().getReferenceNodeNumber() == refNum) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void select() {
@@ -201,11 +341,12 @@ public class NEAT {
 		// Now what? -- Pick the top X
 		// and DELETE the others
 		// If yes how many to delete? and what to do after deleting?
-		
+
 		Set<Genome> toReturn = new HashSet<Genome>();
 		soFarTop.keySet().forEach(thisSpeciesId -> {
 			List<Genome> allGenomesInthisSpecies = soFarTop.get(thisSpeciesId);
-			toReturn.addAll(allGenomesInthisSpecies.subList(0, NUMBEROFCHAMPIONSTOSELECTINEACHSPECIES));
+			toReturn.addAll(allGenomesInthisSpecies.subList(0,
+					(int) PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * allGenomesInthisSpecies.size()));
 		});
 		genomes = toReturn;
 	}
