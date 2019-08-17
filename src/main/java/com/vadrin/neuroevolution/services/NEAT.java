@@ -182,13 +182,36 @@ public class NEAT {
 
 	public void crossOver() {
 		Iterator<Genome> iterator = genomes.iterator();
+		Map<String, List<Genome>> speciesByGenomesMap = new HashMap<String, List<Genome>>();
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
-			if(randomNumber(0d, 1d)<CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER) {
-				//This genome wont be crossed over. will just be mutated later.
-			}else {
-				//this genome will be selected for crossover
+			if (randomNumber(0d, 1d) < CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER) {
+				// This genome wont be crossed over. will just be mutated later.
+			} else {
+				// this genome will be selected for crossover
+				if (speciesByGenomesMap.containsKey(genome.getSpeciesId())) {
+					speciesByGenomesMap.get(genome.getSpeciesId()).add(genome);
+				} else {
+					List<Genome> emptyL = new ArrayList<Genome>();
+					emptyL.add(genome);
+					speciesByGenomesMap.put(genome.getSpeciesId(), emptyL);
+				}
 			}
+		}
+		// post this we have the list of genomes which we need to cross over between
+		// themselves. Per species.
+		Iterator<String> speciesIds = speciesByGenomesMap.keySet().iterator();
+		while (speciesIds.hasNext()) {
+			String thisSpeciesId = speciesIds.next();
+			int currentNumberOfGenomesInThisSpecies = getNumberOfGenomesIn(thisSpeciesId);
+			for (int i = 0; i < currentNumberOfGenomesInThisSpecies; i++) {
+				// pick any two random genomes in this species
+				// and then cross over between them
+				// and then put them back in the pool with same speciesid
+			}
+			// just validate if the total number in the pool is matching with pool size.
+			// if not, for the last speciesid, just add a couple of more untill the pool
+			// size matches the genomes size
 		}
 	}
 
