@@ -38,8 +38,8 @@ public class NEAT {
 																						// > 5
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
-	private static final double CHANCEFORWEIGHTMUTATIONWITHSMALLPERTUBED = 1
-			- CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT;
+//	private static final double CHANCEFORWEIGHTMUTATIONWITHSMALLPERTUBED = 1
+//			- CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT;
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
@@ -64,15 +64,15 @@ public class NEAT {
 	}
 
 	public void process() {
-		//run a test and update the fitness scores for each genome
+		// run a test and update the fitness scores for each genome
 		fitBattle();
-		//populate the species id for each genome
+		// populate the species id for each genome
 		speciate();// done
-		//Top 50% of genomes in each species are selected.
+		// Top 50% of genomes in each species are selected.
 		select();// done
-		//within the species select two random parents are re populate the pool
+		// within the species select two random parents are re populate the pool
 		crossOver();
-		//mutate the ONLY NEW ONES OR ALL???
+		// mutate the ONLY NEW ONES OR ALL???
 		mutate();// done
 	}
 
@@ -102,6 +102,7 @@ public class NEAT {
 		Arrays.sort(connectionGenes2,
 				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
 
+		// TODO: Need to remove the below useless lines of code
 		if (connectionGenes1.length > 2 && connectionGenes1[0].getReferenceInnovationNumber() > connectionGenes1[1]
 				.getReferenceInnovationNumber()) {
 			System.out.println("BIG TROUBLE!!!!!!!!!!!!!!!");
@@ -166,6 +167,10 @@ public class NEAT {
 	}
 
 	public void mutate() {
+		// this is wrong? everyone is getting mutated.. even the best ones. Is this
+		// right? -> i think its right. whats the point if a genome stays the same.
+		// besides its not everyone gets mutated. it needs to be "lucky" so we are cool
+		// here.
 		Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 		Iterator<Genome> iterator = genomes.iterator();
 		while (iterator.hasNext()) {
@@ -176,7 +181,15 @@ public class NEAT {
 	}
 
 	public void crossOver() {
-
+		Iterator<Genome> iterator = genomes.iterator();
+		while (iterator.hasNext()) {
+			Genome genome = iterator.next();
+			if(randomNumber(0d, 1d)<CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER) {
+				//This genome wont be crossed over. will just be mutated later.
+			}else {
+				//this genome will be selected for crossover
+			}
+		}
 	}
 
 	private Genome crossOver(Genome genome1, Genome genome2) {
@@ -259,7 +272,7 @@ public class NEAT {
 			}
 			if ((ConnectionGeneMostlyEmpty1[i] == null && ConnectionGeneMostlyEmpty2[i] != null)
 					|| (ConnectionGeneMostlyEmpty2[i] == null && ConnectionGeneMostlyEmpty1[i] != null)) {
-				ConnectionGene toAdd;
+				ConnectionGene toAdd = null;
 				if (i < connectionGene1MaxInnovationNumber) {
 					// disjoing genes
 					if (ConnectionGeneMostlyEmpty1[i] != null) {
@@ -285,6 +298,7 @@ public class NEAT {
 								ConnectionGeneMostlyEmpty2[i].getReferenceInnovationNumber());
 					}
 				}
+				connectionGenesOfNewGene.add(toAdd);
 			}
 		}
 		Set<NodeGene> nodeGenesOfNewGene = new HashSet<NodeGene>();
