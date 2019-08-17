@@ -71,12 +71,12 @@ public class NEAT {
 		// Top 50% of genomes in each species are selected.
 		select();// done
 		// within the species select two random parents are re populate the pool
-		crossOver();
+		crossOver();// done
 		// mutate the ONLY NEW ONES OR ALL???
 		mutate();// done
 	}
 
-	public void speciate() {
+	private void speciate() {
 		Iterator<Genome> iterator = genomes.iterator();
 		Map<Genome, String> speciesIdToGenomeMap = new HashMap<Genome, String>();
 		while (iterator.hasNext()) {
@@ -166,7 +166,7 @@ public class NEAT {
 		return deltaScore < DELTAT;
 	}
 
-	public void mutate() {
+	private void mutate() {
 		// this is wrong? everyone is getting mutated.. even the best ones. Is this
 		// right? -> i think its right. whats the point if a genome stays the same.
 		// besides its not everyone gets mutated. it needs to be "lucky" so we are cool
@@ -180,7 +180,7 @@ public class NEAT {
 		}
 	}
 
-	public void crossOver() {
+	private void crossOver() {
 		Iterator<Genome> iterator = genomes.iterator();
 		Map<String, List<Genome>> speciesByGenomesMap = new HashMap<String, List<Genome>>();
 		while (iterator.hasNext()) {
@@ -208,11 +208,48 @@ public class NEAT {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
+				int firstParentIndex = (int) randomNumber(0, speciesByGenomesMap.get(thisSpeciesId).size());
+				int secondParentIndex = (int) randomNumber(0, speciesByGenomesMap.get(thisSpeciesId).size());
+				Genome newGenome = crossOver(speciesByGenomesMap.get(thisSpeciesId).get(firstParentIndex),
+						speciesByGenomesMap.get(thisSpeciesId).get(secondParentIndex));
+				newGenome.setSpeciesId(thisSpeciesId);
+				genomes.add(newGenome);
 			}
-			// just validate if the total number in the pool is matching with pool size.
-			// if not, for the last speciesid, just add a couple of more untill the pool
-			// size matches the genomes size
 		}
+		// just validate if the total number in the pool is matching with pool size.
+		// if not, do interspecies mating untill the actual pool size is reached
+		while (genomes.size() < poolSize) {
+			int firstSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
+			int secondSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
+			Iterator<String> allSpeciesIds = speciesByGenomesMap.keySet().iterator();
+			int someCounter = 0;
+			String firstSpeciesKey = null;
+			String secondSpeciesKey = null;
+			while (allSpeciesIds.hasNext()) {
+				String thisKey = allSpeciesIds.next();
+				if (firstSpeciesIndex == someCounter) {
+					firstSpeciesKey = thisKey;
+				} else if (secondSpeciesIndex == someCounter) {
+					secondSpeciesKey = thisKey;
+				}
+				someCounter++;
+			}
+			Genome newGenome = crossOver(speciesByGenomesMap.get(firstSpeciesKey).get(0),
+					speciesByGenomesMap.get(secondSpeciesKey).get(0));
+			genomes.add(newGenome);
+		}
+	}
+
+	private int getNumberOfGenomesIn(String thisSpeciesId) {
+		int toReturn = 0;
+		Iterator<Genome> iterator = genomes.iterator();
+		while (iterator.hasNext()) {
+			Genome genome = iterator.next();
+			if (genome.getSpeciesId().equalsIgnoreCase(thisSpeciesId)) {
+				toReturn++;
+			}
+		}
+		return toReturn;
 	}
 
 	private Genome crossOver(Genome genome1, Genome genome2) {
@@ -359,7 +396,7 @@ public class NEAT {
 		return false;
 	}
 
-	public void select() {
+	private void select() {
 		// Select the top X in each species
 		// To start lets make the list of each species
 		Iterator<Genome> iterator = genomes.iterator();
@@ -393,7 +430,7 @@ public class NEAT {
 		genomes = toReturn;
 	}
 
-	public void fitBattle() {
+	private void fitBattle() {
 
 	}
 
