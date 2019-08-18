@@ -17,6 +17,7 @@ import com.vadrin.neuroevolution.models.Genome;
 import com.vadrin.neuroevolution.models.MutationType;
 import com.vadrin.neuroevolution.models.NodeGene;
 import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 import com.vadrin.neuroevolution.models.exceptions.ReferenceInnovaationNumberDoesNotExistException;
 
 public class NEAT {
@@ -64,8 +65,10 @@ public class NEAT {
 	}
 
 	public void process() {
-		// run a test and update the fitness scores for each genome
-		fitBattle();
+		// run a test with all the genomes
+		calculate();// done
+		// update the fitness scores for each genome
+		fitBattle();// done
 		// populate the species id for each genome
 		speciate();// done
 		// Top 50% of genomes in each species are selected.
@@ -430,8 +433,75 @@ public class NEAT {
 		genomes = toReturn;
 	}
 
-	private void fitBattle() {
+	public void fitBattle() {
+		System.out.println("ITS ASSUMED THAT YOU HAVE ASSINGNED FITNESS SCORE FOR ALL GENOMES USING SETFITNESS METHOD");
+	}
 
+	public void calculate() {
+		System.out.println("ITS ASSUMED THAT YOU HAVE RUN THE CALCUATE METHOD ON ALL THE INPUT");
+	}
+
+	public Double[] calculate(Genome genome, double[] input) throws InvalidInputException {
+		int temp = 0;
+		Iterator<NodeGene> inputNodeGenesSorted = genome.getNodeGenes().stream()
+				.filter(nodeGen -> (nodeGen.getType() == NodeGeneType.INPUT))
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber())).iterator();
+		while (inputNodeGenesSorted.hasNext()) {
+			NodeGene thisOne = inputNodeGenesSorted.next();
+			thisOne.setOutput(input[temp]);
+			temp++;
+		}
+		if (inputNodeGenesSorted.hasNext())
+			throw new InvalidInputException();
+
+		Iterator<NodeGene> hiddenNodeGenesSorted = genome.getNodeGenes().stream()
+				.filter(nodeGen -> (nodeGen.getType() == NodeGeneType.HIDDEN))
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber())).iterator();
+		while (hiddenNodeGenesSorted.hasNext()) {
+			NodeGene thisNGene = hiddenNodeGenesSorted.next();
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenes().stream()
+					.filter(connGene -> (connGene.getToReferenceNodeNumber() == thisNGene.getReferenceNodeNumber()))
+					.iterator();
+			double sumOfInputToThisHiddenNode = 0;
+			while (relavantConnGenesIterator.hasNext()) {
+				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
+				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
+				sumOfInputToThisHiddenNode += tempConnGene.getWeight() * genome.getNodeGenes().stream()
+						.filter(n -> n.getReferenceNodeNumber() == tempConnGene.getFromReferenceNodeNumber())
+						.findFirst().get().getOutput();
+			}
+			double finalOutput = applySigmiodActivationFunction(sumOfInputToThisHiddenNode);
+			thisNGene.setOutput(finalOutput);
+		}
+
+		Iterator<NodeGene> outputNodeGenesSorted = genome.getNodeGenes().stream()
+				.filter(nodeGen -> (nodeGen.getType() == NodeGeneType.OUTPUT))
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber())).iterator();
+		while (outputNodeGenesSorted.hasNext()) {
+			NodeGene thisNGene = hiddenNodeGenesSorted.next();
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenes().stream()
+					.filter(connGene -> (connGene.getToReferenceNodeNumber() == thisNGene.getReferenceNodeNumber()))
+					.iterator();
+			double sumOfInputToThisHiddenNode = 0;
+			while (relavantConnGenesIterator.hasNext()) {
+				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
+				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
+				sumOfInputToThisHiddenNode += tempConnGene.getWeight() * genome.getNodeGenes().stream()
+						.filter(n -> n.getReferenceNodeNumber() == tempConnGene.getFromReferenceNodeNumber())
+						.findFirst().get().getOutput();
+			}
+			double finalOutput = applySigmiodActivationFunction(sumOfInputToThisHiddenNode);
+			thisNGene.setOutput(finalOutput);
+		}
+
+		Iterator<NodeGene> toReturnIterator = genome.getNodeGenes().stream()
+				.filter(nodeGen -> (nodeGen.getType() == NodeGeneType.OUTPUT))
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber())).iterator();
+		List<Double> toReturn = new ArrayList<Double>();
+		while (toReturnIterator.hasNext()) {
+			toReturn.add(toReturnIterator.next().getOutput());
+		}
+		return toReturn.toArray(new Double[toReturn.size()]);
 	}
 
 	private void mutate(Genome genome, MutationType mutationType,
@@ -599,6 +669,14 @@ public class NEAT {
 		Random r = new Random();
 		double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 		return randomValue;
+	}
+
+	private double applySigmiodActivationFunction(double input) {
+		return 1d / (1d + Math.exp(-input));
+	}
+
+	public Set<Genome> getGenomes() {
+		return genomes;
 	}
 
 }
