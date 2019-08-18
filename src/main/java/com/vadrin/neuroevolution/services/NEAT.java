@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
@@ -52,19 +53,23 @@ public class NEAT {
 	private static final double RANDOMWEIGHTUPPERBOUND = -2d;
 	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
+	
+	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	public NEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
 		super();
-		this.referenceInnovationCounter = 1;
+		this.referenceInnovationCounter = 0;// we are doing ++ and then assigning first time. so its fine to start with
+											// zero
 		this.referenceNodeCounter = 1;
 		this.genomes = new HashSet<Genome>();
 		this.poolSize = poolSize;
 		this.inputNodesSize = inputNodesSize;
 		this.outputNodesSize = outputNodesSize;
-		loadAllGenomesWithInputOutputNodeGenesAndEmptyConnectionGenes();
+		loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes();
 	}
 
 	public void process() {
+		luckyConnectionGenesInThisGeneration = new ConcurrentHashMap<ConnectionGene, NodeGene>();
 		// run a test with all the genomes
 		calculate();// done
 		// update the fitness scores for each genome
@@ -100,6 +105,13 @@ public class NEAT {
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[genome2.getConnectionGenes().size()];
 		connectionGenes2 = genome2.getConnectionGenes().toArray(connectionGenes2);
 
+		// When i initially started testing this, i was getting arrayindex going -1 due
+		// to empty connection genes array at the start of program. I beleive this is
+		// the reason why the NEAT documentation says that you start with a BIAS node
+		// with output always 1. So that you wont run into such issues. You can avoid
+		// issues in crossOver method also if you simply start with a bias node
+		// additionally.
+
 		Arrays.sort(connectionGenes1,
 				(a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()));
 		Arrays.sort(connectionGenes2,
@@ -124,16 +136,16 @@ public class NEAT {
 		int connectionGene1MaxInnovationNumber = connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber();
 
-		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[(connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()
 								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
-								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
-		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())+1];
+		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[(connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()
 								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
-								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())+1];
 		Arrays.asList(connectionGenes1).stream()
 				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
@@ -174,12 +186,11 @@ public class NEAT {
 		// right? -> i think its right. whats the point if a genome stays the same.
 		// besides its not everyone gets mutated. it needs to be "lucky" so we are cool
 		// here.
-		Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 		Iterator<Genome> iterator = genomes.iterator();
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			Arrays.asList(MutationType.class.getEnumConstants()).stream()
-					.forEach(mutationType -> mutate(genome, mutationType, luckyConnectionGenesInThisGeneration));
+					.forEach(mutationType -> mutate(genome, mutationType));
 		}
 	}
 
@@ -290,16 +301,16 @@ public class NEAT {
 		int connectionGene1MaxInnovationNumber = connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber();
 
-		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+		ConnectionGene[] ConnectionGeneMostlyEmpty1 = new ConnectionGene[(connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()
 								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
-								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
-		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[connectionGenes1[connectionGenes1.length - 1]
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())+1];
+		ConnectionGene[] ConnectionGeneMostlyEmpty2 = new ConnectionGene[(connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()
 								? connectionGenes1[connectionGenes1.length - 1].getReferenceInnovationNumber()
-								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber()];
+								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())+1];
 		Arrays.asList(connectionGenes1).stream()
 				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
@@ -428,7 +439,7 @@ public class NEAT {
 		soFarTop.keySet().forEach(thisSpeciesId -> {
 			List<Genome> allGenomesInthisSpecies = soFarTop.get(thisSpeciesId);
 			toReturn.addAll(allGenomesInthisSpecies.subList(0,
-					(int) PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * allGenomesInthisSpecies.size()));
+					(int) (PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * allGenomesInthisSpecies.size())));
 		});
 		genomes = toReturn;
 	}
@@ -478,7 +489,7 @@ public class NEAT {
 				.filter(nodeGen -> (nodeGen.getType() == NodeGeneType.OUTPUT))
 				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber())).iterator();
 		while (outputNodeGenesSorted.hasNext()) {
-			NodeGene thisNGene = hiddenNodeGenesSorted.next();
+			NodeGene thisNGene = outputNodeGenesSorted.next();
 			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenes().stream()
 					.filter(connGene -> (connGene.getToReferenceNodeNumber() == thisNGene.getReferenceNodeNumber()))
 					.iterator();
@@ -504,14 +515,13 @@ public class NEAT {
 		return toReturn.toArray(new Double[toReturn.size()]);
 	}
 
-	private void mutate(Genome genome, MutationType mutationType,
-			Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration) {
+	private void mutate(Genome genome, MutationType mutationType) {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
 			mutationAddConnectionGene(genome);
 			break;
 		case ADDNODEGENE:
-			mutationAddNodeGene(genome, luckyConnectionGenesInThisGeneration);
+			mutationAddNodeGene(genome);
 			break;
 		case ALTERWEIGHTOFCONNECTIONGENE:
 			mutationAlterWeightOfConnectionGene(genome);
@@ -543,8 +553,7 @@ public class NEAT {
 		});
 	}
 
-	private void mutationAddNodeGene(Genome genome,
-			Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration) {
+	private void mutationAddNodeGene(Genome genome) {
 		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
 				NodeGene newNodeGene;
@@ -597,8 +606,11 @@ public class NEAT {
 		}
 	}
 
-	private void loadAllGenomesWithInputOutputNodeGenesAndEmptyConnectionGenes() {
+	private void loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes() {
 		for (int i = 0; i < poolSize; i++) {
+			// TODO: Somehow i need to add the bias node here... it wont be coming as part
+			// of inputs array but still ill need to acomodate. Read the comments on the
+			// mutate method regarding the bias nodes.
 			Set<NodeGene> nodeGenes = new HashSet<NodeGene>();
 			for (int j = 1; j <= inputNodesSize; j++) {
 				NodeGene nodeGene = new NodeGene(j, NodeGeneType.INPUT);
@@ -610,6 +622,15 @@ public class NEAT {
 			}
 			// Instatiate Empty Connection Genes
 			Set<ConnectionGene> connectionGenes = new HashSet<ConnectionGene>();
+
+			// Make the network fully connected from every input node to every output node
+			for (int j = 1; j <= inputNodesSize; j++) {
+				for (int k = inputNodesSize + 1; k <= inputNodesSize + outputNodesSize; k++) {
+					connectionGenes.add(constructNewConnectionGene(
+							randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), true, j, k));
+				}
+			}
+
 			Genome genome = new Genome(nodeGenes, connectionGenes);
 			genomes.add(genome);
 		}
@@ -677,6 +698,11 @@ public class NEAT {
 
 	public Set<Genome> getGenomes() {
 		return genomes;
+	}
+
+	public Genome bestBestGenomeInPool() {
+		return genomes.stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).findFirst()
+				.get();
 	}
 
 }
