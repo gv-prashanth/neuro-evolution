@@ -1,27 +1,25 @@
 package com.vadrin.neuroevolution.models;
 
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Genome {
 
 	private Set<NodeGene> nodeGenes;
 	private Set<ConnectionGene> connectionGenes;
 	private double fitnessScore;
-	private String speciesId;
-
-	public Set<NodeGene> getNodeGenes() {
-		return nodeGenes;
-	}
-
-	public Set<ConnectionGene> getConnectionGenes() {
-		return connectionGenes;
-	}
+	private int referenceSpeciesNumber;
+	private String id;
 
 	public Genome(Set<NodeGene> nodeGenes, Set<ConnectionGene> connectionGenes) {
 		super();
 		this.nodeGenes = nodeGenes;
 		this.connectionGenes = connectionGenes;
 		this.fitnessScore = 0;
+		this.referenceSpeciesNumber = 0;
+		this.id = UUID.randomUUID().toString();
 	}
 
 	public double getFitnessScore() {
@@ -32,12 +30,28 @@ public class Genome {
 		this.fitnessScore = fitnessScore;
 	}
 
-	public String getSpeciesId() {
-		return speciesId;
+	public int getReferenceSpeciesNumber() {
+		return referenceSpeciesNumber;
 	}
 
-	public void setSpeciesId(String speciesId) {
-		this.speciesId = speciesId;
+	public void setReferenceSpeciesNumber(int referenceSpeciesNumber) {
+		this.referenceSpeciesNumber = referenceSpeciesNumber;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public List<NodeGene> getSortedNodeGenes(NodeGeneType type) {
+		return this.nodeGenes.stream().filter(nodeGen -> (nodeGen.getType() == type))
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber()))
+				.collect(Collectors.toList());
+	}
+
+	public List<ConnectionGene> getSortedConnectionGenes() {
+		return this.connectionGenes.stream()
+				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
+				.collect(Collectors.toList());
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,9 +19,10 @@ import com.vadrin.neuroevolution.models.MutationType;
 import com.vadrin.neuroevolution.models.NodeGene;
 import com.vadrin.neuroevolution.models.NodeGeneType;
 import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
+import com.vadrin.neuroevolution.models.exceptions.InvalidRequestForNewConnectionGeneException;
 import com.vadrin.neuroevolution.models.exceptions.ReferenceInnovaationNumberDoesNotExistException;
 
-public class NEAT {
+public class NEAT2 {
 
 	private Set<Genome> genomes;
 	private int referenceInnovationCounter;
@@ -56,7 +57,7 @@ public class NEAT {
 	
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
-	public NEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
+	public NEAT2(int poolSize, int inputNodesSize, int outputNodesSize) {
 		super();
 		this.referenceInnovationCounter = 0;// we are doing ++ and then assigning first time. so its fine to start with
 											// zero
@@ -65,7 +66,12 @@ public class NEAT {
 		this.poolSize = poolSize;
 		this.inputNodesSize = inputNodesSize;
 		this.outputNodesSize = outputNodesSize;
-		loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes();
+		try {
+			loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes();
+		} catch (InvalidRequestForNewConnectionGeneException e) {
+			System.out.println("WOREST TROUBLE !!!! WRONG IMPLEMENATION ISSUE>>> NEED TO FIX");
+			e.printStackTrace();
+		}
 	}
 
 	public void process() {
@@ -190,7 +196,14 @@ public class NEAT {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			Arrays.asList(MutationType.class.getEnumConstants()).stream()
-					.forEach(mutationType -> mutate(genome, mutationType));
+					.forEach(mutationType -> {
+						try {
+							mutate(genome, mutationType);
+						} catch (InvalidRequestForNewConnectionGeneException e) {
+							System.out.println("BIG TROUBLE !!!! WRONG IMPLEMENATION ISSUE>>> NEED TO FIX");
+							//e.printStackTrace();
+						}
+					});
 		}
 	}
 
@@ -215,6 +228,10 @@ public class NEAT {
 		// post this we have the list of genomes which we need to cross over between
 		// themselves. Per species.
 		Iterator<String> speciesIds = speciesByGenomesMap.keySet().iterator();
+		
+		//TODO: HACK FIX FOR NOW
+		Genome lastGenome = null;
+		
 		while (speciesIds.hasNext()) {
 			String thisSpeciesId = speciesIds.next();
 			int currentNumberOfGenomesInThisSpecies = getNumberOfGenomesIn(thisSpeciesId);
@@ -228,29 +245,34 @@ public class NEAT {
 						speciesByGenomesMap.get(thisSpeciesId).get(secondParentIndex));
 				newGenome.setSpeciesId(thisSpeciesId);
 				genomes.add(newGenome);
+				lastGenome = newGenome;
 			}
 		}
 		// just validate if the total number in the pool is matching with pool size.
 		// if not, do interspecies mating untill the actual pool size is reached
 		while (genomes.size() < poolSize) {
-			int firstSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
-			int secondSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
-			Iterator<String> allSpeciesIds = speciesByGenomesMap.keySet().iterator();
-			int someCounter = 0;
-			String firstSpeciesKey = null;
-			String secondSpeciesKey = null;
-			while (allSpeciesIds.hasNext()) {
-				String thisKey = allSpeciesIds.next();
-				if (firstSpeciesIndex == someCounter) {
-					firstSpeciesKey = thisKey;
-				} else if (secondSpeciesIndex == someCounter) {
-					secondSpeciesKey = thisKey;
-				}
-				someCounter++;
-			}
-			Genome newGenome = crossOver(speciesByGenomesMap.get(firstSpeciesKey).get(0),
-					speciesByGenomesMap.get(secondSpeciesKey).get(0));
+			//TODO: need to fix this
+			//System.out.println("pool size came from "+ poolSize +" to "+ genomes.size());
+			Genome newGenome = new Genome(lastGenome.getNodeGenes(), lastGenome.getConnectionGenes());
 			genomes.add(newGenome);
+//			int firstSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
+//			int secondSpeciesIndex = (int) randomNumber(0, speciesByGenomesMap.size());
+//			Iterator<String> allSpeciesIds = speciesByGenomesMap.keySet().iterator();
+//			int someCounter = 0;
+//			String firstSpeciesKey = null;
+//			String secondSpeciesKey = null;
+//			while (allSpeciesIds.hasNext()) {
+//				String thisKey = allSpeciesIds.next();
+//				if (firstSpeciesIndex == someCounter) {
+//					firstSpeciesKey = thisKey;
+//				} else if (secondSpeciesIndex == someCounter) {
+//					secondSpeciesKey = thisKey;
+//				}
+//				someCounter++;
+//			}
+//			Genome newGenome = crossOver(speciesByGenomesMap.get(firstSpeciesKey).get(0),
+//					speciesByGenomesMap.get(secondSpeciesKey).get(0));
+//			genomes.add(newGenome);
 		}
 	}
 
@@ -448,11 +470,11 @@ public class NEAT {
 	}
 
 	public void fitBattle() {
-		System.out.println("ITS ASSUMED THAT YOU HAVE ASSINGNED FITNESS SCORE FOR ALL GENOMES USING SETFITNESS METHOD");
+		//System.out.println("ITS ASSUMED THAT YOU HAVE ASSINGNED FITNESS SCORE FOR ALL GENOMES USING SETFITNESS METHOD");
 	}
 
 	public void calculate() {
-		System.out.println("ITS ASSUMED THAT YOU HAVE RUN THE CALCUATE METHOD ON ALL THE INPUT");
+		//System.out.println("ITS ASSUMED THAT YOU HAVE RUN THE CALCUATE METHOD ON ALL THE INPUT");
 	}
 
 	public Double[] calculate(Genome genome, double[] input) throws InvalidInputException {
@@ -521,7 +543,7 @@ public class NEAT {
 		return toReturn.toArray(new Double[toReturn.size()]);
 	}
 
-	private void mutate(Genome genome, MutationType mutationType) {
+	private void mutate(Genome genome, MutationType mutationType) throws InvalidRequestForNewConnectionGeneException {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
 			mutationAddConnectionGene(genome);
@@ -559,7 +581,7 @@ public class NEAT {
 		});
 	}
 
-	private void mutationAddNodeGene(Genome genome) {
+	private void mutationAddNodeGene(Genome genome) throws InvalidRequestForNewConnectionGeneException {
 		Iterator<ConnectionGene> connIterator = genome.getConnectionGenes().iterator();
 		Set<ConnectionGene> toAdd = new HashSet<ConnectionGene>();
 		while(connIterator.hasNext()) {
@@ -582,11 +604,14 @@ public class NEAT {
 					newNodeGene = new NodeGene(tempToCopy.getReferenceNodeNumber(),tempToCopy.getType());
 				} else {
 					newNodeGene = constructNewNodeGene();
+					System.out.println("Constructed new nodegene with ref node number "+newNodeGene.getReferenceNodeNumber());
 					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 				}
 				genome.getNodeGenes().add(newNodeGene);
 				// This connection will get a new node in between now.
 				connectionGene.setEnabled(false);
+				if(connectionGene.getFromReferenceNodeNumber()==3 && newNodeGene.getReferenceNodeNumber()==1)
+					System.out.println("ISSUE IN mutationAddNodeGene");
 				ConnectionGene firstHalf = constructNewConnectionGene(1.0, true,
 						connectionGene.getFromReferenceNodeNumber(), newNodeGene.getReferenceNodeNumber());
 				ConnectionGene secondHalf = constructNewConnectionGene(connectionGene.getWeight(), true,
@@ -599,7 +624,7 @@ public class NEAT {
 		genome.getConnectionGenes().addAll(toAdd);
 	}
 
-	private void mutationAddConnectionGene(Genome genome) {
+	private void mutationAddConnectionGene(Genome genome) throws InvalidRequestForNewConnectionGeneException  {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
 		genome.getNodeGenes().forEach(nodeGene -> {
 			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
@@ -608,12 +633,16 @@ public class NEAT {
 		});
 		Iterator<NodeGene> luckyPairsIterator = luckyPairs.iterator();
 		while (luckyPairsIterator.hasNext()) {
-			NodeGene from = luckyPairsIterator.next();
+			NodeGene n1 = luckyPairsIterator.next();
 			if (luckyPairsIterator.hasNext()) {
-				NodeGene to = luckyPairsIterator.next();
+				NodeGene n2 = luckyPairsIterator.next();
 				// To make sure we dont join input to input or output to output
-				if ((from.getType() != to.getType())
-						|| (from.getType() == to.getType() && from.getType() == NodeGeneType.HIDDEN)) {
+				if ((n1.getType() != n2.getType())
+						|| (n1.getType() == n2.getType() && n1.getType() == NodeGeneType.HIDDEN)) {
+					NodeGene from = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n1: n2;
+					NodeGene to = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n2: n1;
+					if(from.getReferenceNodeNumber()==3 && to.getReferenceNodeNumber()==1)
+						System.out.println("ISSUE IN mutationAddConnectionGene");
 					ConnectionGene toAdd = constructNewConnectionGene(
 							randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), true,
 							from.getReferenceNodeNumber(), to.getReferenceNodeNumber());
@@ -623,7 +652,7 @@ public class NEAT {
 		}
 	}
 
-	private void loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes() {
+	private void loadAllGenomesWithInputOutputNodeGenesAndFullyConnectedConnectionGenes() throws InvalidRequestForNewConnectionGeneException {
 		for (int i = 0; i < poolSize; i++) {
 			// TODO: Somehow i need to add the bias node here... it wont be coming as part
 			// of inputs array but still ill need to acomodate. Read the comments on the
@@ -667,12 +696,10 @@ public class NEAT {
 	}
 
 	private ConnectionGene constructNewConnectionGene(double weight, boolean enabled, int fromReferenceNodeNumber,
-			int toReferenceNodeNumber) {
-		if (fromReferenceNodeNumber > toReferenceNodeNumber) {
-			System.out.println("WRONG FROM AND TO ---> AUTO FIXING!");
-			int temp = fromReferenceNodeNumber;
-			fromReferenceNodeNumber = toReferenceNodeNumber;
-			toReferenceNodeNumber = temp;
+			int toReferenceNodeNumber) throws InvalidRequestForNewConnectionGeneException {
+		if ((fromReferenceNodeNumber > toReferenceNodeNumber) && !isOutputNode(toReferenceNodeNumber)) {
+			System.out.println(fromReferenceNodeNumber +"-->"+ toReferenceNodeNumber);
+			throw new InvalidRequestForNewConnectionGeneException();
 		}
 		try {
 			int innovationNumberForThisConnectionGene = requestForConnectionGeneReferenceInnovationNumber(
@@ -684,6 +711,15 @@ public class NEAT {
 			return new ConnectionGene(weight, enabled, fromReferenceNodeNumber, toReferenceNodeNumber,
 					referenceInnovationCounter);
 		}
+	}
+
+	private boolean isOutputNode(int toReferenceNodeNumber) {
+		Iterator<Genome> iterator = genomes.iterator();
+		while (iterator.hasNext()) {
+			Genome genome = iterator.next();
+			return genome.getNodeGenes().stream().anyMatch(n -> (n.getReferenceNodeNumber()==toReferenceNodeNumber) && n.getType()==NodeGeneType.OUTPUT);
+		}
+		return false;
 	}
 
 	private int requestForConnectionGeneReferenceInnovationNumber(int fromReferenceNodeNumber,

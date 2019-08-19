@@ -4,8 +4,8 @@ public class ConnectionGene extends Gene {
 
 	private double weight;
 	private boolean enabled;
-	private int fromReferenceNodeNumber;
-	private int toReferenceNodeNumber;
+	private String fromNodeGeneId;
+	private String toNodeGeneId;
 	private int referenceInnovationNumber;
 
 	public double getWeight() {
@@ -20,21 +20,21 @@ public class ConnectionGene extends Gene {
 		return referenceInnovationNumber;
 	}
 
-	public int getFromReferenceNodeNumber() {
-		return fromReferenceNodeNumber;
+	public String getFromNodeGeneId() {
+		return fromNodeGeneId;
 	}
 
-	public int getToReferenceNodeNumber() {
-		return toReferenceNodeNumber;
+	public String getToNodeGeneId() {
+		return toNodeGeneId;
 	}
 
-	public ConnectionGene(double weight, boolean enabled, int fromReferenceNodeNumber, int toReferenceNodeNumber,
+	public ConnectionGene(double weight, boolean enabled, String fromNodeGeneId, String toNodeGeneId,
 			int referenceInnovationNumber) {
 		super();
 		this.weight = weight;
 		this.enabled = enabled;
-		this.fromReferenceNodeNumber = fromReferenceNodeNumber;
-		this.toReferenceNodeNumber = toReferenceNodeNumber;
+		this.fromNodeGeneId = fromNodeGeneId;
+		this.toNodeGeneId = toNodeGeneId;
 		this.referenceInnovationNumber = referenceInnovationNumber;
 	}
 
