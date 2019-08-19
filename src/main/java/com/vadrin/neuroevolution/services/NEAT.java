@@ -379,6 +379,9 @@ public class NEAT {
 		Iterator<ConnectionGene> cgng = connectionGenesOfNewGene.iterator();
 		while (cgng.hasNext()) {
 			ConnectionGene thisConnG = cgng.next();
+			if(thisConnG==null) {
+				System.out.println("adsf");
+			}
 			if (!contains(nodeGenesOfNewGene, thisConnG.getFromReferenceNodeNumber()))
 				nodeGenesOfNewGene.add(new NodeGene(thisConnG.getFromReferenceNodeNumber(), getNodeTypeOfThisRefNumber(
 						genome1.getNodeGenes(), genome2.getNodeGenes(), thisConnG.getFromReferenceNodeNumber())));
@@ -476,10 +479,13 @@ public class NEAT {
 			double sumOfInputToThisHiddenNode = 0;
 			while (relavantConnGenesIterator.hasNext()) {
 				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
-				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
-				sumOfInputToThisHiddenNode += tempConnGene.getWeight() * genome.getNodeGenes().stream()
-						.filter(n -> n.getReferenceNodeNumber() == tempConnGene.getFromReferenceNodeNumber())
-						.findFirst().get().getOutput();
+				// totalInput = (prevNodeOutput * connectionWeight) Over all connections
+				// do only if its enabled... else you should skip it..
+				if(tempConnGene.isEnabled()) {
+					sumOfInputToThisHiddenNode += tempConnGene.getWeight() * genome.getNodeGenes().stream()
+							.filter(n -> n.getReferenceNodeNumber() == tempConnGene.getFromReferenceNodeNumber())
+							.findFirst().get().getOutput();	
+				}
 			}
 			double finalOutput = applySigmiodActivationFunction(sumOfInputToThisHiddenNode);
 			thisNGene.setOutput(finalOutput);
@@ -554,7 +560,10 @@ public class NEAT {
 	}
 
 	private void mutationAddNodeGene(Genome genome) {
-		genome.getConnectionGenes().forEach(connectionGene -> {
+		Iterator<ConnectionGene> connIterator = genome.getConnectionGenes().iterator();
+		Set<ConnectionGene> toAdd = new HashSet<ConnectionGene>();
+		while(connIterator.hasNext()) {
+			ConnectionGene connectionGene = connIterator.next();
 			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
 				NodeGene newNodeGene;
 				if (luckyConnectionGenesInThisGeneration.keySet().stream()
@@ -562,9 +571,15 @@ public class NEAT {
 								.getFromReferenceNodeNumber() == connectionGene.getFromReferenceNodeNumber()
 								&& oneOfLuckyConnectionGene.getToReferenceNodeNumber() == connectionGene
 										.getToReferenceNodeNumber())) {
-					newNodeGene = new NodeGene(
-							luckyConnectionGenesInThisGeneration.get(connectionGene).getReferenceNodeNumber(),
-							luckyConnectionGenesInThisGeneration.get(connectionGene).getType());
+					NodeGene tempToCopy = null;
+					Iterator<ConnectionGene> tempI = luckyConnectionGenesInThisGeneration.keySet().iterator();
+					while(tempI.hasNext()) {
+						ConnectionGene g = tempI.next();
+						if(g.getFromReferenceNodeNumber()==connectionGene.getFromReferenceNodeNumber() && g.getToReferenceNodeNumber()==connectionGene.getToReferenceNodeNumber()) {
+							tempToCopy = luckyConnectionGenesInThisGeneration.get(g);
+						}
+					}
+					newNodeGene = new NodeGene(tempToCopy.getReferenceNodeNumber(),tempToCopy.getType());
 				} else {
 					newNodeGene = constructNewNodeGene();
 					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
@@ -576,10 +591,12 @@ public class NEAT {
 						connectionGene.getFromReferenceNodeNumber(), newNodeGene.getReferenceNodeNumber());
 				ConnectionGene secondHalf = constructNewConnectionGene(connectionGene.getWeight(), true,
 						newNodeGene.getReferenceNodeNumber(), connectionGene.getToReferenceNodeNumber());
-				genome.getConnectionGenes().add(firstHalf);
-				genome.getConnectionGenes().add(secondHalf);
+				toAdd.add(firstHalf);
+				toAdd.add(secondHalf);
 			}
-		});
+		}
+		//To Avoid ConncurrentModificationException
+		genome.getConnectionGenes().addAll(toAdd);
 	}
 
 	private void mutationAddConnectionGene(Genome genome) {
