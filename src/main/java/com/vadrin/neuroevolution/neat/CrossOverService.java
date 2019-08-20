@@ -22,6 +22,8 @@ public class CrossOverService {
 //		toAdd.setEnabled(true);
 //	}
 
+//TODO: im not doing interspecies crossover
+
 	@Autowired
 	MathService mathService;
 
@@ -32,7 +34,9 @@ public class CrossOverService {
 	GenomesService genomesService;
 
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
-
+	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
+	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
+	
 	protected void crossOver() {
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
 			int currentNumberOfGenomesInThisSpecies = getNumberOfGenomesInSpecies(thisSpeciesId);

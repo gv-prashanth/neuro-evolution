@@ -13,8 +13,8 @@ public class ConnectionsService {
 
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
-	private static final double RANDOMWEIGHTLOWERBOUND = -10d;
-	private static final double RANDOMWEIGHTUPPERBOUND = 10d;
+	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
+	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
 
 	@Autowired
 	MathService mathService;

@@ -22,14 +22,11 @@ import com.vadrin.neuroevolution.genome.NodeGene;
 @Service
 public class MutationService {
 
-	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
 	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUSMING GENOMES IN SPECIES IS
 																						// // > 5
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
-	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
-	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
 	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
 	private static final double CHANCEFORADDINGNEWNODE = 0.03d;
 	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
@@ -70,10 +67,16 @@ public class MutationService {
 	}
 
 	private boolean bestInThisSpecies(Genome genome) {
-		return genomesService.getAllGenomes().stream()
-				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get()
-				.getId() == genome.getId();
+		if (genomesService.getAllGenomes().stream()
+				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > 5) {
+			return genomesService.getAllGenomes().stream()
+					.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
+					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
+					.limit(NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION).findFirst().get()
+					.getId() == genome.getId();
+		} else {
+			return false;
+		}
 	}
 
 	private void mutate(Genome genome, MutationType mutationType) {
@@ -136,7 +139,6 @@ public class MutationService {
 					newNodeGene = genomesService.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
 							NodeGeneType.HIDDEN);
 				} catch (NoSuchElementException e) {
-
 					newNodeGene = genomesService.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
 					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 				}

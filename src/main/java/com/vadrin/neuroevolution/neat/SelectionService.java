@@ -15,6 +15,7 @@ public class SelectionService {
 	GenomesService genomesService;
 
 	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
+	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
 
 	protected void select() {
 		// sort within each species

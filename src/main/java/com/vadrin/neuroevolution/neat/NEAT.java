@@ -1,5 +1,6 @@
 package com.vadrin.neuroevolution.neat;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,11 +58,12 @@ public class NEAT {
 		printPool();
 		// mutate the ONLY NEW ONES OR ALL???
 		mutationService.mutate();
+		printPool();
 	}
 
 	private void printPool() {
-		// Collection<Genome> toPrint = getGenomes();
-		// System.out.println(toPrint);
+		System.out.println(new Timestamp(System.currentTimeMillis()));
+		System.out.println("Current population is "+sortedBestGenomeInPool().size());
 	}
 
 	public List<Genome> sortedBestGenomeInPool() {
