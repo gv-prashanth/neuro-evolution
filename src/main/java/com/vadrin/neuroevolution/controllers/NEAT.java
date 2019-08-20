@@ -10,24 +10,12 @@ import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 import com.vadrin.neuroevolution.services.CrossOverService;
 import com.vadrin.neuroevolution.services.FeedForwardService;
 import com.vadrin.neuroevolution.services.GenomesService;
+import com.vadrin.neuroevolution.services.MutationService;
 import com.vadrin.neuroevolution.services.SelectionService;
 import com.vadrin.neuroevolution.services.SpeciationService;
 
 @Controller
 public class NEAT {
-
-	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
-	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUSMING GENOMES IN SPECIES IS
-																						// // > 5
-	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
-	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
-	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
-	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
-	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
-	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
-	private static final double CHANCEFORADDINGNEWNODE = 0.03d;
-	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
-	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
 
 	@Autowired
 	GenomesService genomesService;
@@ -44,6 +32,9 @@ public class NEAT {
 	@Autowired
 	CrossOverService crossOverService;
 
+	@Autowired
+	MutationService mutationService;
+	
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
 		for (int i = 0; i < poolSize; i++) {
 			genomesService.constructRandomGenome(inputNodesSize, outputNodesSize);
@@ -66,7 +57,7 @@ public class NEAT {
 		// within the species select two random parents are re populate the pool
 		crossOverService.crossOver();
 		// mutate the ONLY NEW ONES OR ALL???
-		mutate();
+		mutationService.mutate();
 	}
 
 }

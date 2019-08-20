@@ -3,6 +3,7 @@ package com.vadrin.neuroevolution.services;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ public class GenomesService {
 	@Autowired
 	NodesService nodesService;
 
-	public String constructRandomGenome(int inputNodesSize, int outputNodesSize) {
+	public Genome constructRandomGenome(int inputNodesSize, int outputNodesSize) {
 		// TODO: Somehow i need to add the bias node here... it wont be coming as part
 		// of inputs array but still ill need to acomodate. Read the comments on the
 		// mutate method regarding the bias nodes.
@@ -47,7 +48,59 @@ public class GenomesService {
 		inputNodeGenes.addAll(outputNodeGenes);
 		Genome genome = new Genome(inputNodeGenes, connectionGenes);
 		genomesPool.put(genome.getId(), genome);
-		return genome.getId();
+		return genome;
+	}
+
+	public Genome constructGenomeFromSampleConnectionGeneIds(Set<String> sampleConnectionGeneIds) {
+		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
+		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();
+
+		Iterator<String> cgng = sampleConnectionGeneIds.stream().iterator();
+		while (cgng.hasNext()) {
+			ConnectionGene thisSampleConnectionGene = connectionsService.getConnection(cgng.next());
+			int sampleRefNumberOfFrom = nodesService.getNodeGene(thisSampleConnectionGene.getFromNodeGeneId())
+					.getReferenceNodeNumber();
+			NodeGeneType sampleTypeOfFrom = nodesService.getNodeGene(thisSampleConnectionGene.getFromNodeGeneId())
+					.getType();
+			int sampleRefNumberOfTo = nodesService.getNodeGene(thisSampleConnectionGene.getToNodeGeneId())
+					.getReferenceNodeNumber();
+			NodeGeneType sampleTypeOfTo = nodesService.getNodeGene(thisSampleConnectionGene.getToNodeGeneId())
+					.getType();
+
+			NodeGene constructedNodeGeneOfFrom = null;
+			if (actualNodeGenes.stream().anyMatch(n -> n.getReferenceNodeNumber() == sampleRefNumberOfFrom)) {
+				constructedNodeGeneOfFrom = actualNodeGenes.stream()
+						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfFrom).findFirst().get();
+			} else {
+				constructedNodeGeneOfFrom = nodesService.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfFrom,
+						sampleTypeOfFrom);
+				actualNodeGenes.add(constructedNodeGeneOfFrom);
+			}
+
+			NodeGene constructedNodeGeneOfTo = null;
+			if (actualNodeGenes.stream().anyMatch(n -> n.getReferenceNodeNumber() == sampleRefNumberOfTo)) {
+				constructedNodeGeneOfTo = actualNodeGenes.stream()
+						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfTo).findFirst().get();
+			} else {
+				constructedNodeGeneOfTo = nodesService.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfTo,
+						sampleTypeOfTo);
+				actualNodeGenes.add(constructedNodeGeneOfTo);
+			}
+		}
+		sampleConnectionGeneIds.forEach(sampleId -> {
+			ConnectionGene sampleConn = connectionsService.getConnection(sampleId);
+			String fromNodeGeneId = actualNodeGenes
+					.stream().filter(n -> n.getReferenceNodeNumber() == nodesService
+							.getNodeGene(sampleConn.getFromNodeGeneId()).getReferenceNodeNumber())
+					.findAny().get().getId();
+			String toNodeGeneId = actualNodeGenes
+					.stream().filter(n -> n.getReferenceNodeNumber() == nodesService
+							.getNodeGene(sampleConn.getToNodeGeneId()).getReferenceNodeNumber())
+					.findAny().get().getId();
+			connectionsService.constructConnectionGeneWithInnovationNumber(sampleConn.getReferenceInnovationNumber(),
+					sampleConn.getWeight(), fromNodeGeneId, toNodeGeneId);
+		});
+		return new Genome(actualNodeGenes, actualConnectionGenes);
 	}
 
 	public Collection<Genome> getAllGenomes() {

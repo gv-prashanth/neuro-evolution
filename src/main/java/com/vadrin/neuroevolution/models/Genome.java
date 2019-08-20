@@ -53,5 +53,12 @@ public class Genome {
 				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
 				.collect(Collectors.toList());
 	}
+	
+	public void addConnectionGene(ConnectionGene toAdd) {
+		this.connectionGenes.add(toAdd);
+	}
 
+	public void addNodeGene(NodeGene toAdd) {
+		this.nodeGenes.add(toAdd);
+	}
 }

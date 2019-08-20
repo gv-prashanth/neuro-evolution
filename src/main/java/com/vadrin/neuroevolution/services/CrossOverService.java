@@ -1,13 +1,8 @@
 package com.vadrin.neuroevolution.services;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
 
 @Service
 public class CrossOverService {
 
+//TODO: Need to implement the below code
 //	if (!ConnectionGeneMostlyEmpty1[i].isEnabled() && !ConnectionGeneMostlyEmpty2[i].isEnabled()
 //			&& toAdd.isLucky(1 - CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS)) {
 //		toAdd.setEnabled(true);
@@ -144,30 +138,7 @@ public class CrossOverService {
 				}
 			}
 		}
-
-		Set<String> sampleNodeGeneIds = new HashSet<String>();
-		Iterator<String> cgng = sampleConnectionGeneIds.stream().iterator();
-		while (cgng.hasNext()) {
-			ConnectionGene thisSampleConnectionGene = connectionsService.getConnection(cgng.next());
-			int sampleRefNumberOfFrom = nodesService.getNodeGene(thisSampleConnectionGene.getFromNodeGeneId())
-					.getReferenceNodeNumber();
-			NodeGeneType sampleTypeOfFrom = nodesService.getNodeGene(thisSampleConnectionGene.getFromNodeGeneId())
-					.getType();
-			int sampleRefNumberOfTo = nodesService.getNodeGene(thisSampleConnectionGene.getToNodeGeneId())
-					.getReferenceNodeNumber();
-			NodeGeneType sampleTypeOfTo = nodesService.getNodeGene(thisSampleConnectionGene.getToNodeGeneId())
-					.getType();
-
-			NodeGene constructedNodeGeneOfFrom = nodesService
-					.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfFrom, sampleTypeOfFrom);
-			NodeGene constructedNodeGeneOfTo = nodesService
-					.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfTo, sampleTypeOfTo);
-			connectionsService.constructConnectionGeneWithInnovationNumber(
-					thisSampleConnectionGene.getReferenceInnovationNumber(), thisSampleConnectionGene.getWeight(),
-					constructedNodeGeneOfFrom.getId(), constructedNodeGeneOfTo.getId());
-
-		}
-		return new Genome(nodeGenesOfNewGene, connectionGenesOfNewGene);
+		return genomesService.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGeneIds);
 	}
 
 }
