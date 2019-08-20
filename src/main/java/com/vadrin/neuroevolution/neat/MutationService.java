@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,11 +11,13 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.MutationType;
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.commons.MathService;
+import com.vadrin.neuroevolution.commons.MutationType;
+import com.vadrin.neuroevolution.commons.NodeGeneType;
+import com.vadrin.neuroevolution.genome.ConnectionGene;
+import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.genome.GenomesService;
+import com.vadrin.neuroevolution.genome.NodeGene;
 
 @Service
 public class MutationService {
@@ -42,21 +44,15 @@ public class MutationService {
 	@Autowired
 	MathService mathService;
 
-	@Autowired
-	ConnectionsService connectionsService;
-
-	@Autowired
-	NodesService nodesService;
-
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	private void prepare() {
 		this.luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 	}
 
-	public void mutate() {
-		// this is wrong? everyone is getting mutated.. even the best ones. Is this
-		// right? -> its wrong.. your best fitness will go down if you keep mutating
+	protected void mutate() {
+		// everyone should not get mutated.. the best ones should be left as is..else
+		// your best fitness will go down if you keep mutating
 		// your best guy
 		prepare();
 		genomesService.getAllGenomes().forEach(genome -> {
@@ -104,7 +100,7 @@ public class MutationService {
 		genome.getSortedConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
 				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
-					connectionsService.setRandomWeight(connectionGene.getId());
+					genomesService.setRandomWeight(genome, connectionGene.getId());
 				} else {
 					connectionGene.setWeight(connectionGene.getWeight()
 							* mathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
@@ -121,35 +117,36 @@ public class MutationService {
 				NodeGene newNodeGene;
 				try {
 					ConnectionGene refCon = luckyConnectionGenesInThisGeneration.keySet().stream()
-							.filter(oneOfLuckyConnectionGene -> nodesService
-									.getNodeGene(oneOfLuckyConnectionGene.getFromNodeGeneId())
-									.getReferenceNodeNumber() == nodesService
-											.getNodeGene(connectionGene.getFromNodeGeneId()).getReferenceNodeNumber()
-									&& nodesService.getNodeGene(oneOfLuckyConnectionGene.getToNodeGeneId())
-											.getReferenceNodeNumber() == nodesService
-													.getNodeGene(connectionGene.getToNodeGeneId())
+							.filter(oneOfLuckyConnectionGene -> genomesService
+									.getNodeGene(genome, oneOfLuckyConnectionGene.getFromNodeGeneId())
+									.getReferenceNodeNumber() == genomesService
+											.getNodeGene(genome, connectionGene.getFromNodeGeneId())
+											.getReferenceNodeNumber()
+									&& genomesService.getNodeGene(genome, oneOfLuckyConnectionGene.getToNodeGeneId())
+											.getReferenceNodeNumber() == genomesService
+													.getNodeGene(genome, connectionGene.getToNodeGeneId())
 													.getReferenceNodeNumber())
 							.findAny().get();
 					int referenceNodeNumber = luckyConnectionGenesInThisGeneration.get(refCon).getReferenceNodeNumber();
-					newNodeGene = nodesService.constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber,
+					newNodeGene = genomesService.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
 							NodeGeneType.HIDDEN);
 				} catch (NoSuchElementException e) {
 
-					newNodeGene = nodesService.constructRandomNodeGene(NodeGeneType.HIDDEN);
+					newNodeGene = genomesService.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
 					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 				}
-				genome.addNodeGene(newNodeGene);
+				genomesService.addNode(genome, newNodeGene);
 
 				// Now that the node is added. Lets make connections and also lets not forget to
 				// disable the prev connection
 				connectionGene.setEnabled(false);
-				ConnectionGene firstHalf = connectionsService
-						.constructRandomConnectionGene(connectionGene.getFromNodeGeneId(), newNodeGene.getId(), 1.0d);
-				ConnectionGene secondHalf = connectionsService.constructRandomConnectionGene(newNodeGene.getId(),
-						connectionGene.getToNodeGeneId(), connectionGene.getWeight());
+				ConnectionGene firstHalf = genomesService.constructConnectionGeneWithNewInnovationNumber(genome,
+						connectionGene.getFromNodeGeneId(), newNodeGene.getId(), 1.0d);
+				ConnectionGene secondHalf = genomesService.constructConnectionGeneWithNewInnovationNumber(genome,
+						newNodeGene.getId(), connectionGene.getToNodeGeneId(), connectionGene.getWeight());
 
-				genome.addConnectionGene(firstHalf);
-				genome.addConnectionGene(secondHalf);
+				genomesService.addConnection(genome, firstHalf);
+				genomesService.addConnection(genome, secondHalf);
 			}
 		}
 	}
@@ -184,16 +181,19 @@ public class MutationService {
 					NodeGene to = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n2 : n1;
 
 					// If no connection is already present between the two nodes
-					if (!connectionsService.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
+					if (!genomesService.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
 						ConnectionGene toAdd = null;
 						try {
-							toAdd = connectionsService.constructConnectionGeneWithInnovationNumber(connectionsService
-									.getInnovationNumber(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
-									from.getId(), to.getId());
+							toAdd = genomesService
+									.constructConnectionGeneWithExistingInnovationNumber(
+											genome, genomesService.getInnovationNumber(genome,
+													from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
+											from.getId(), to.getId());
 						} catch (NoSuchElementException e) {
-							toAdd = connectionsService.constructRandomConnectionGene(from.getId(), to.getId());
+							toAdd = genomesService.constructConnectionGeneWithNewInnovationNumber(genome, from.getId(),
+									to.getId());
 						}
-						genome.addConnectionGene(toAdd);
+						genomesService.addConnection(genome, toAdd);
 					}
 				}
 			}

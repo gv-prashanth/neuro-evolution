@@ -1,9 +1,11 @@
-package com.vadrin.neuroevolution.models;
+package com.vadrin.neuroevolution.genome;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.vadrin.neuroevolution.commons.NodeGeneType;
 
 public class Genome {
 
@@ -26,7 +28,7 @@ public class Genome {
 		return fitnessScore;
 	}
 
-	public void setFitnessScore(double fitnessScore) {
+	protected void setFitnessScore(double fitnessScore) {
 		this.fitnessScore = fitnessScore;
 	}
 
@@ -54,11 +56,11 @@ public class Genome {
 				.collect(Collectors.toList());
 	}
 	
-	public void addConnectionGene(ConnectionGene toAdd) {
+	protected void addConnectionGene(ConnectionGene toAdd) {
 		this.connectionGenes.add(toAdd);
 	}
 
-	public void addNodeGene(NodeGene toAdd) {
+	protected void addNodeGene(NodeGene toAdd) {
 		this.nodeGenes.add(toAdd);
 	}
 }

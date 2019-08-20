@@ -1,4 +1,6 @@
-package com.vadrin.neuroevolution.models;
+package com.vadrin.neuroevolution.genome;
+
+import com.vadrin.neuroevolution.commons.NodeGeneType;
 
 public class NodeGene extends Gene {
 
@@ -14,7 +16,7 @@ public class NodeGene extends Gene {
 		return referenceNodeNumber;
 	}
 
-	public NodeGene(int referenceNodeKey, NodeGeneType type) {
+	protected NodeGene(int referenceNodeKey, NodeGeneType type) {
 		super();
 		this.referenceNodeNumber = referenceNodeKey;
 		this.type = type;

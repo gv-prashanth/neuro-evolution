@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,8 +8,10 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.commons.MathService;
+import com.vadrin.neuroevolution.genome.ConnectionGene;
+import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Service
 public class CrossOverService {
@@ -29,15 +31,9 @@ public class CrossOverService {
 	@Autowired
 	GenomesService genomesService;
 
-	@Autowired
-	ConnectionsService connectionsService;
-
-	@Autowired
-	NodesService nodesService;
-
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 
-	public void crossOver() {
+	protected void crossOver() {
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
 			int currentNumberOfGenomesInThisSpecies = getNumberOfGenomesInSpecies(thisSpeciesId);
 			for (int i = 0; i < currentNumberOfGenomesInThisSpecies; i++) {

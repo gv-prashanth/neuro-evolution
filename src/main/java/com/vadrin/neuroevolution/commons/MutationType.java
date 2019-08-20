@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.models;
+package com.vadrin.neuroevolution.commons;
 
 public enum MutationType {
 	ADDCONNECTIONGENE, ADDNODEGENE, ENABLEDISABLECONNECTIONGENE, ALTERWEIGHTOFCONNECTIONGENE;

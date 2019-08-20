@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.commons;
 
 import java.util.Random;
 

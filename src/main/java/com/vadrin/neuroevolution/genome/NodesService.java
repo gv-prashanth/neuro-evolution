@@ -1,12 +1,11 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.genome;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.commons.NodeGeneType;
 
 @Service
 public class NodesService {
@@ -14,20 +13,20 @@ public class NodesService {
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 
-	public NodeGene constructRandomNodeGene(NodeGeneType type) {
+	protected NodeGene constructRandomNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
 		nodeGenesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
 	
-	public NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
+	protected NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
 		nodeGenesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
 
-	public NodeGene getNodeGene(String id) {
+	protected NodeGene getNodeGene(String id) {
 		return nodeGenesPool.get(id);
 	}
 }

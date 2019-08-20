@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,8 +9,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.genome.ConnectionGene;
+import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Service
 public class SpeciationService {
@@ -26,7 +27,7 @@ public class SpeciationService {
 	private int referenceSpeciesCounter = 0;
 	private Map<Integer, String> speciesPool = new HashMap<Integer, String>();
 
-	public void speciate() {
+	protected void speciate() {
 		resetSpeciesPool();
 		Iterator<Genome> iterator = genomesService.getAllGenomes().iterator();
 		if (iterator.hasNext()) {
@@ -135,11 +136,11 @@ public class SpeciationService {
 		return deltaScore < DELTAT;
 	}
 
-	public String getReferenceGenomeOfSpeciesId(int speciesId) {
+	protected String getReferenceGenomeOfSpeciesId(int speciesId) {
 		return this.speciesPool.get(speciesId);
 	}
 
-	public Map<Integer, String> getSpeciesPool() {
+	protected Map<Integer, String> getSpeciesPool() {
 		return speciesPool;
 	}
 

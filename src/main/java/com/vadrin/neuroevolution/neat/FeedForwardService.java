@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.Iterator;
 import java.util.List;
@@ -6,11 +6,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
-import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
+import com.vadrin.neuroevolution.commons.MathService;
+import com.vadrin.neuroevolution.commons.NodeGeneType;
+import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
+import com.vadrin.neuroevolution.genome.ConnectionGene;
+import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.genome.GenomesService;
+import com.vadrin.neuroevolution.genome.NodeGene;
 
 @Service
 public class FeedForwardService {
@@ -19,9 +21,9 @@ public class FeedForwardService {
 	MathService mathService;
 
 	@Autowired
-	NodesService nodeGeneFactory;
+	GenomesService genomesService;
 
-	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
+	protected double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
 		if (genome.getSortedNodeGenes(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
@@ -44,7 +46,7 @@ public class FeedForwardService {
 				// do only if its enabled... else you should skip it..
 				if (tempConnGene.isEnabled()) {
 					sumOfInput += tempConnGene.getWeight()
-							* nodeGeneFactory.getNodeGene(tempConnGene.getFromNodeGeneId()).getOutput();
+							* genomesService.getFromNodeOfThisConnectionGene(tempConnGene.getId()).getOutput();
 				}
 			}
 			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
@@ -61,7 +63,7 @@ public class FeedForwardService {
 				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
 				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
 				sumOfInput += tempConnGene.getWeight()
-						* nodeGeneFactory.getNodeGene(tempConnGene.getFromNodeGeneId()).getOutput();
+						* genomesService.getFromNodeOfThisConnectionGene(tempConnGene.getId()).getOutput();
 			}
 			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
 			outputNodeGene.setOutput(finalOutput);

@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.models;
+package com.vadrin.neuroevolution.genome;
 
 import java.util.UUID;
 
@@ -10,7 +10,7 @@ public abstract class Gene {
 		return (Math.random() < chance);
 	}
 
-	public Gene() {
+	protected Gene() {
 		super();
 		this.id = UUID.randomUUID().toString();
 	}

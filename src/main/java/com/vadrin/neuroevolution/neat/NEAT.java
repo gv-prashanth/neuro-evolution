@@ -1,18 +1,13 @@
-package com.vadrin.neuroevolution.controllers;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
-import com.vadrin.neuroevolution.services.CrossOverService;
-import com.vadrin.neuroevolution.services.FeedForwardService;
-import com.vadrin.neuroevolution.services.GenomesService;
-import com.vadrin.neuroevolution.services.MutationService;
-import com.vadrin.neuroevolution.services.SelectionService;
-import com.vadrin.neuroevolution.services.SpeciationService;
+import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
+import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Controller
 public class NEAT {

@@ -1,7 +1,9 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.neat;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Service
 public class SelectionService {
@@ -14,7 +16,7 @@ public class SelectionService {
 
 	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
 
-	public void select() {
+	protected void select() {
 		// sort within each species
 		// Pick the top X
 		// and DELETE the others

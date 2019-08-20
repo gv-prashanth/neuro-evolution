@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.models;
+package com.vadrin.neuroevolution.genome;
 
 public class ConnectionGene extends Gene {
 
@@ -28,7 +28,7 @@ public class ConnectionGene extends Gene {
 		return toNodeGeneId;
 	}
 
-	public ConnectionGene(double weight, boolean enabled, String fromNodeGeneId, String toNodeGeneId,
+	protected ConnectionGene(double weight, boolean enabled, String fromNodeGeneId, String toNodeGeneId,
 			int referenceInnovationNumber) {
 		super();
 		this.weight = weight;

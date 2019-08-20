@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.genome;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,10 +10,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.commons.NodeGeneType;
 
 @Service
 public class GenomesService {
@@ -42,7 +39,8 @@ public class GenomesService {
 		Set<ConnectionGene> connectionGenes = new HashSet<ConnectionGene>();
 		inputNodeGenes.forEach(in -> {
 			outputNodeGenes.forEach(out -> {
-				connectionGenes.add(connectionsService.constructRandomConnectionGene(in.getId(), out.getId()));
+				connectionGenes.add(
+						connectionsService.constructConnectionGeneWithNewInnovationNumber(in.getId(), out.getId()));
 			});
 		});
 		inputNodeGenes.addAll(outputNodeGenes);
@@ -97,8 +95,8 @@ public class GenomesService {
 					.stream().filter(n -> n.getReferenceNodeNumber() == nodesService
 							.getNodeGene(sampleConn.getToNodeGeneId()).getReferenceNodeNumber())
 					.findAny().get().getId();
-			connectionsService.constructConnectionGeneWithInnovationNumber(sampleConn.getReferenceInnovationNumber(),
-					sampleConn.getWeight(), fromNodeGeneId, toNodeGeneId);
+			connectionsService.constructConnectionGeneWithExistingInnovationNumber(
+					sampleConn.getReferenceInnovationNumber(), sampleConn.getWeight(), fromNodeGeneId, toNodeGeneId);
 		});
 		return new Genome(actualNodeGenes, actualConnectionGenes);
 	}
@@ -115,4 +113,70 @@ public class GenomesService {
 		genomesPool.remove(toDel);
 	}
 
+	public boolean isConnectionPresentBetweenNodes(String fromNodeId, String toNodeId) {
+		return connectionsService.getConnectionGenesPool().stream()
+				.anyMatch(c -> c.getFromNodeGeneId().equalsIgnoreCase(fromNodeId)
+						&& c.getToNodeGeneId().equalsIgnoreCase(toNodeId));
+	}
+
+	public void addConnection(Genome genome, ConnectionGene toAdd) {
+		validate();
+		genome.addConnectionGene(toAdd);
+	}
+
+	public void addNode(Genome genome, NodeGene newNodeGene) {
+		validate();
+		genome.addNodeGene(newNodeGene);
+	}
+
+	private void validate() {
+		System.out.println("I NEED TO IMPLEMENT THIS DAM THING WHICH THROWS EXCEPTIONS");
+	}
+
+	public NodeGene getFromNodeOfThisConnectionGene(String connId) {
+		return nodesService.getNodeGene(connectionsService.getConnection(connId).getFromNodeGeneId());
+	}
+
+	public void setRandomWeight(Genome genome, String id) {
+		validate();
+		connectionsService.setRandomWeight(id);
+	}
+
+	public NodeGene getNodeGene(Genome genome, String id) {
+		validate();
+		return nodesService.getNodeGene(id);
+	}
+
+	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
+			NodeGeneType type) {
+		validate();
+		return nodesService.constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber, type);
+	}
+
+	public NodeGene constructRandomNodeGene(Genome genome, NodeGeneType type) {
+		validate();
+		return nodesService.constructRandomNodeGene(type);
+	}
+
+	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(Genome genome, String fromNodeGeneId,
+			String toNodeGeneId, double weight) {
+		validate();
+		return connectionsService.constructConnectionGeneWithNewInnovationNumber(fromNodeGeneId, toNodeGeneId, weight);
+	}
+
+	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(Genome genome, int innovationNumber,
+			String id, String id2) {
+		validate();
+		return connectionsService.constructConnectionGeneWithExistingInnovationNumber(innovationNumber, id, id2);
+	}
+
+	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(Genome genome, String id, String id2) {
+		validate();
+		return connectionsService.constructConnectionGeneWithNewInnovationNumber(id, id2);
+	}
+
+	public int getInnovationNumber(Genome genome, int referenceNodeNumber, int referenceNodeNumber2) {
+		validate();
+		return connectionsService.getInnovationNumber(referenceNodeNumber, referenceNodeNumber2);
+	}
 }
