@@ -36,11 +36,13 @@ public class CrossOverService {
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
+	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
 	
 	protected void crossOver() {
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
-			int currentNumberOfGenomesInThisSpecies = getNumberOfGenomesInSpecies(thisSpeciesId);
-			for (int i = 0; i < currentNumberOfGenomesInThisSpecies; i++) {
+			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
+			int i = getNumberOfGenomesInSpecies(thisSpeciesId);
+			while(i < numberOfOriginalSpeciesPopToReach) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
@@ -48,6 +50,7 @@ public class CrossOverService {
 				Genome parent2 = getRandomParentOfThisSpecies(thisSpeciesId);
 				Genome newGenome = crossOver(parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
+				i++;
 			}
 		});
 	}
@@ -59,7 +62,7 @@ public class CrossOverService {
 				.get();
 	}
 
-	private int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
+	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
 		return (int) genomesService.getAllGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}

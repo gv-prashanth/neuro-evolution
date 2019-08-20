@@ -27,7 +27,6 @@ public class MutationService {
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
-	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
 	private static final double CHANCEFORADDINGNEWNODE = 0.03d;
 	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
 	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;

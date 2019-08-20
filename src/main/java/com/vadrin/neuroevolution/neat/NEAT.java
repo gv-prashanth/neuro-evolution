@@ -62,8 +62,8 @@ public class NEAT {
 	}
 
 	private void printPool() {
-		System.out.println(new Timestamp(System.currentTimeMillis()));
-		System.out.println("Current population is "+sortedBestGenomeInPool().size());
+//		System.out.println(new Timestamp(System.currentTimeMillis()));
+//		System.out.println("Current population is "+sortedBestGenomeInPool().size());
 	}
 
 	public List<Genome> sortedBestGenomeInPool() {

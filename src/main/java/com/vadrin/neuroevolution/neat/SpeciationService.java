@@ -19,6 +19,9 @@ public class SpeciationService {
 	@Autowired
 	GenomesService genomesService;
 
+	@Autowired
+	CrossOverService crossOverService;
+
 	private static final double C1 = 1.0d;
 	private static final double C2 = 1.0d;
 	private static final double C3 = 0.4d;
@@ -26,6 +29,7 @@ public class SpeciationService {
 
 	private int referenceSpeciesCounter = 0;
 	private Map<Integer, String> speciesPool = new HashMap<Integer, String>();
+	private Map<Integer, Integer> speciesPoolSize = new HashMap<Integer, Integer>();
 
 	protected void speciate() {
 		resetSpeciesPool();
@@ -47,10 +51,17 @@ public class SpeciationService {
 			if (notDone)
 				constructNewSpeciesWithGenome(genome);
 		}
+		loadSpeciesPoolSize();
+	}
+
+	private void loadSpeciesPoolSize() {
+		speciesPool.keySet().forEach(
+				speciesId -> speciesPoolSize.put(speciesId, crossOverService.getNumberOfGenomesInSpecies(speciesId)));
 	}
 
 	private void resetSpeciesPool() {
 		speciesPool = new HashMap<Integer, String>();
+		speciesPoolSize = new HashMap<Integer, Integer>();
 		referenceSpeciesCounter = 0;
 	}
 
@@ -143,6 +154,10 @@ public class SpeciationService {
 
 	protected Map<Integer, String> getSpeciesPool() {
 		return speciesPool;
+	}
+
+	public int getPreSelectSpeciesPoolSize(int speciesId) {
+		return speciesPoolSize.get(speciesId);
 	}
 
 }
