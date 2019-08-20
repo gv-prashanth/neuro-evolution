@@ -7,11 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import com.vadrin.neuroevolution.commons.exceptions.ConnectionAlreadyBelongsToAnotherGeneException;
-import com.vadrin.neuroevolution.commons.exceptions.ConnectionAlreadyConnectedException;
-import com.vadrin.neuroevolution.commons.exceptions.InvalidConnectionRequestException;
 import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
-import com.vadrin.neuroevolution.commons.exceptions.ThisReferencedConnectionAlreadyPresentInThisGenomeException;
 import com.vadrin.neuroevolution.genome.Genome;
 import com.vadrin.neuroevolution.genome.GenomesService;
 
@@ -37,12 +33,7 @@ public class NEAT {
 	MutationService mutationService;
 
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
-		try {
-			genomesService.instantiateRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
-		} catch (InvalidConnectionRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		genomesService.instantiateRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
 	}
 
 	public Collection<Genome> getGenomes() {
@@ -53,8 +44,7 @@ public class NEAT {
 		return feedForwardService.feedForward(genomesService.getGenome(genomeId), input);
 	}
 
-	public void stepOneGeneration() throws ConnectionAlreadyBelongsToAnotherGeneException,
-			ConnectionAlreadyConnectedException, ThisReferencedConnectionAlreadyPresentInThisGenomeException {
+	public void stepOneGeneration() {
 		printPool();
 		// Find the speciesId for each species
 		speciationService.speciate();
@@ -66,12 +56,7 @@ public class NEAT {
 		crossOverService.crossOver();
 		printPool();
 		// mutate the ONLY NEW ONES OR ALL???
-		try {
-			mutationService.mutate();
-		} catch (InvalidConnectionRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		mutationService.mutate();
 	}
 
 	private void printPool() {
@@ -81,7 +66,8 @@ public class NEAT {
 
 	public List<Genome> sortedBestGenomeInPool() {
 		return genomesService.getAllGenomes().stream()
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).collect(Collectors.toList());
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
+				.collect(Collectors.toList());
 	}
 
 	public void setFitnessScore(String genomeId, double fitnessScore) {

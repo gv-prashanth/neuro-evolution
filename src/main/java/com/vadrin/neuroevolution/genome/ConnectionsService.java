@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.commons.MathService;
-import com.vadrin.neuroevolution.commons.exceptions.InvalidConnectionRequestException;
 
 @Service
 public class ConnectionsService {
@@ -23,15 +22,8 @@ public class ConnectionsService {
 	@Autowired
 	NodesService nodesService;
 
-	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId, String toNodeGeneId)
-			throws InvalidConnectionRequestException {
-		if (fromNodeGeneId.equalsIgnoreCase(toNodeGeneId)) {
-			throw new InvalidConnectionRequestException();
-		}
-		if (nodesService.getNodeGene(fromNodeGeneId).getReferenceNodeNumber() == nodesService.getNodeGene(toNodeGeneId)
-				.getReferenceNodeNumber()) {
-			throw new InvalidConnectionRequestException();
-		}
+	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId,
+			String toNodeGeneId) {
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGeneId, toNodeGeneId,
 				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
 	}

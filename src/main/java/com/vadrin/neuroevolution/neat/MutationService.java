@@ -14,10 +14,6 @@ import org.springframework.stereotype.Service;
 import com.vadrin.neuroevolution.commons.MathService;
 import com.vadrin.neuroevolution.commons.MutationType;
 import com.vadrin.neuroevolution.commons.NodeGeneType;
-import com.vadrin.neuroevolution.commons.exceptions.ConnectionAlreadyBelongsToAnotherGeneException;
-import com.vadrin.neuroevolution.commons.exceptions.ConnectionAlreadyConnectedException;
-import com.vadrin.neuroevolution.commons.exceptions.InvalidConnectionRequestException;
-import com.vadrin.neuroevolution.commons.exceptions.ThisReferencedConnectionAlreadyPresentInThisGenomeException;
 import com.vadrin.neuroevolution.genome.ConnectionGene;
 import com.vadrin.neuroevolution.genome.Genome;
 import com.vadrin.neuroevolution.genome.GenomesService;
@@ -54,8 +50,7 @@ public class MutationService {
 		this.luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 	}
 
-	protected void mutate() throws InvalidConnectionRequestException, ConnectionAlreadyBelongsToAnotherGeneException,
-			ConnectionAlreadyConnectedException, ThisReferencedConnectionAlreadyPresentInThisGenomeException {
+	protected void mutate() {
 		// everyone should not get mutated.. the best ones should be left as is..else
 		// your best fitness will go down if you keep mutating
 		// your best guy
@@ -81,9 +76,7 @@ public class MutationService {
 				.getId() == genome.getId();
 	}
 
-	private void mutate(Genome genome, MutationType mutationType)
-			throws InvalidConnectionRequestException, ConnectionAlreadyBelongsToAnotherGeneException,
-			ConnectionAlreadyConnectedException, ThisReferencedConnectionAlreadyPresentInThisGenomeException {
+	private void mutate(Genome genome, MutationType mutationType) {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
 			mutationAddConnectionGene(genome);
@@ -121,8 +114,7 @@ public class MutationService {
 		});
 	}
 
-	private void mutationAddNodeGene(Genome genome) throws ConnectionAlreadyBelongsToAnotherGeneException,
-			ConnectionAlreadyConnectedException, ThisReferencedConnectionAlreadyPresentInThisGenomeException {
+	private void mutationAddNodeGene(Genome genome) {
 		Iterator<ConnectionGene> connIterator = genome.getSortedConnectionGenes().iterator();
 		while (connIterator.hasNext()) {
 			ConnectionGene connectionGene = connIterator.next();
@@ -164,9 +156,7 @@ public class MutationService {
 		}
 	}
 
-	private void mutationAddConnectionGene(Genome genome)
-			throws InvalidConnectionRequestException, ConnectionAlreadyBelongsToAnotherGeneException,
-			ConnectionAlreadyConnectedException, ThisReferencedConnectionAlreadyPresentInThisGenomeException {
+	private void mutationAddConnectionGene(Genome genome) {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
 		genome.getSortedNodeGenes(NodeGeneType.INPUT).forEach(nodeGene -> {
 			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
