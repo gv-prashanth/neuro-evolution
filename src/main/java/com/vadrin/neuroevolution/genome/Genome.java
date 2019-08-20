@@ -50,12 +50,18 @@ public class Genome {
 				.collect(Collectors.toList());
 	}
 
+	public List<NodeGene> getSortedNodeGenes() {
+		return this.nodeGenes.stream()
+				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber()))
+				.collect(Collectors.toList());
+	}
+
 	public List<ConnectionGene> getSortedConnectionGenes() {
 		return this.connectionGenes.stream()
 				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
 				.collect(Collectors.toList());
 	}
-	
+
 	protected void addConnectionGene(ConnectionGene toAdd) {
 		this.connectionGenes.add(toAdd);
 	}

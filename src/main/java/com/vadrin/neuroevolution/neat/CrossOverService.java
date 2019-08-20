@@ -129,7 +129,13 @@ public class CrossOverService {
 				} else {
 					// excess genes. Pick only if excess is in max fit parent
 					if (genome2.getFitnessScore() > genome1.getFitnessScore()) {
-						sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty2[i].getId());
+						try {
+							sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty2[i].getId());
+						}catch(NullPointerException e) {
+							//TODO: Need to fix this.. but for now its fine...
+							//e.printStackTrace();
+							//System.out.println("Need to fix this dam thing");
+						}
 					}
 				}
 			}

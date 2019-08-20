@@ -21,7 +21,7 @@ public class NodesService {
 	}
 	
 	protected NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
-		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
+		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
 		nodeGenesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}

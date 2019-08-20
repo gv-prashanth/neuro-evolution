@@ -51,6 +51,7 @@ public class SpeciationService {
 
 	private void resetSpeciesPool() {
 		speciesPool = new HashMap<Integer, String>();
+		referenceSpeciesCounter = 0;
 	}
 
 	private void constructNewSpeciesWithGenome(Genome genome) {

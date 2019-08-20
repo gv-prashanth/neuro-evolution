@@ -7,14 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.commons.MathService;
+import com.vadrin.neuroevolution.commons.exceptions.InvalidConnectionRequestException;
 
 @Service
 public class ConnectionsService {
 
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
-	private static final double RANDOMWEIGHTLOWERBOUND = -2d;
-	private static final double RANDOMWEIGHTUPPERBOUND = 2d;
+	private static final double RANDOMWEIGHTLOWERBOUND = -10d;
+	private static final double RANDOMWEIGHTUPPERBOUND = 10d;
 
 	@Autowired
 	MathService mathService;
@@ -22,12 +23,21 @@ public class ConnectionsService {
 	@Autowired
 	NodesService nodesService;
 
-	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId, String toNodeGeneId) {
+	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId, String toNodeGeneId)
+			throws InvalidConnectionRequestException {
+		if (fromNodeGeneId.equalsIgnoreCase(toNodeGeneId)) {
+			throw new InvalidConnectionRequestException();
+		}
+		if (nodesService.getNodeGene(fromNodeGeneId).getReferenceNodeNumber() == nodesService.getNodeGene(toNodeGeneId)
+				.getReferenceNodeNumber()) {
+			throw new InvalidConnectionRequestException();
+		}
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGeneId, toNodeGeneId,
 				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
 	}
 
-	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId, String toNodeGeneId, double weight) {
+	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(String fromNodeGeneId, String toNodeGeneId,
+			double weight) {
 		referenceInnovationCounter++;
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGeneId, toNodeGeneId,
 				referenceInnovationCounter);
@@ -35,10 +45,10 @@ public class ConnectionsService {
 		return toReturn;
 	}
 
-	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber, double weight,
-			String fromNodeGeneId, String toNodeGeneId) {
+	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+			double weight, String fromNodeGeneId, String toNodeGeneId) {
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGeneId, toNodeGeneId,
-				referenceInnovationCounter);
+				referenceInnovationNumber);
 		connectionGenesPool.add(toReturn);
 		return toReturn;
 	}
