@@ -1,6 +1,4 @@
-package com.vadrin.neuroevolution.genome;
-
-import com.vadrin.neuroevolution.commons.NodeGeneType;
+package com.vadrin.neuroevolution.models;
 
 public class NodeGene extends Gene {
 

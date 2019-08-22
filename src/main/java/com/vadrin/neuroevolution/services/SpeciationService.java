@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.neat;
+package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,14 +9,14 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.genome.ConnectionGene;
-import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.models.ConnectionGene;
+import com.vadrin.neuroevolution.models.Genome;
 
 @Service
 public class SpeciationService {
 
 	@Autowired
-	GenomesPool genomesPool;
+	PoolService poolService;
 
 	@Autowired
 	CrossOverService crossOverService;
@@ -30,9 +30,9 @@ public class SpeciationService {
 	private Map<Integer, String> speciesPool = new HashMap<Integer, String>();
 	private Map<Integer, Integer> speciesPoolSize = new HashMap<Integer, Integer>();
 
-	protected void speciate() {
+	public void speciate() {
 		resetSpeciesPool();
-		Iterator<Genome> iterator = genomesPool.getAllGenomes().iterator();
+		Iterator<Genome> iterator = poolService.getAllGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
 			constructNewSpeciesWithGenome(firstGenome);
@@ -73,8 +73,8 @@ public class SpeciationService {
 	}
 
 	private boolean isSameSpecies(String genomeId, int speciesId) {
-		List<ConnectionGene> connectionList1 = genomesPool.getGenome(genomeId).getSortedConnectionGenes();
-		List<ConnectionGene> connectionList2 = genomesPool.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
+		List<ConnectionGene> connectionList1 = poolService.getGenome(genomeId).getSortedConnectionGenes();
+		List<ConnectionGene> connectionList2 = poolService.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
 				.getSortedConnectionGenes();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
@@ -148,11 +148,11 @@ public class SpeciationService {
 		return deltaScore < DELTAT;
 	}
 
-	protected String getReferenceGenomeOfSpeciesId(int speciesId) {
+	private String getReferenceGenomeOfSpeciesId(int speciesId) {
 		return this.speciesPool.get(speciesId);
 	}
 
-	protected Map<Integer, String> getSpeciesPool() {
+	public Map<Integer, String> getSpeciesPool() {
 		return speciesPool;
 	}
 

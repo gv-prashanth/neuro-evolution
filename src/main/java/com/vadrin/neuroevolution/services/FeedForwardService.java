@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.neat;
+package com.vadrin.neuroevolution.services;
 
 import java.util.Iterator;
 import java.util.List;
@@ -6,20 +6,19 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.commons.MathService;
-import com.vadrin.neuroevolution.commons.NodeGeneType;
-import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
-import com.vadrin.neuroevolution.genome.ConnectionGene;
-import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.NodeGene;
+import com.vadrin.neuroevolution.models.ConnectionGene;
+import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.NodeGene;
+import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 
 @Service
 public class FeedForwardService {
 	
 	@Autowired
-	GenomesPool genomesPool;
+	PoolService poolService;
 
-	protected double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
+	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
 		if (genome.getSortedNodeGenes(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();

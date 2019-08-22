@@ -1,6 +1,5 @@
-package com.vadrin.neuroevolution.neat;
+package com.vadrin.neuroevolution.controllers;
 
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,14 +7,20 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
-import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
+import com.vadrin.neuroevolution.services.CrossOverService;
+import com.vadrin.neuroevolution.services.FeedForwardService;
+import com.vadrin.neuroevolution.services.MutationService;
+import com.vadrin.neuroevolution.services.PoolService;
+import com.vadrin.neuroevolution.services.SelectionService;
+import com.vadrin.neuroevolution.services.SpeciationService;
 
 @Controller
 public class NEAT {
 
 	@Autowired
-	GenomesPool genomesPool;
+	PoolService poolService;
 
 	@Autowired
 	FeedForwardService feedForwardService;
@@ -33,46 +38,36 @@ public class NEAT {
 	MutationService mutationService;
 
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
-		genomesPool.constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
+		poolService.constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
 	}
 
 	public Collection<Genome> getGenomes() {
-		return genomesPool.getAllGenomes();
+		return poolService.getAllGenomes();
 	}
 
 	public double[] process(String genomeId, double[] input) throws InvalidInputException {
-		return feedForwardService.feedForward(genomesPool.getGenome(genomeId), input);
+		return feedForwardService.feedForward(poolService.getGenome(genomeId), input);
 	}
 
 	public void stepOneGeneration() {
-		printPool();
 		// Find the speciesId for each species
 		speciationService.speciate();
-		printPool();
 		// Top 50% of genomes in each species are selected.
 		selectionService.select();
-		printPool();
 		// within the species select two random parents are re populate the pool
 		crossOverService.crossOver();
-		printPool();
 		// mutate the ONLY NEW ONES OR ALL???
 		mutationService.mutate();
-		printPool();
-	}
-
-	private void printPool() {
-//		System.out.println(new Timestamp(System.currentTimeMillis()));
-//		System.out.println("Current population is "+sortedBestGenomeInPool().size());
 	}
 
 	public List<Genome> sortedBestGenomeInPool() {
-		return genomesPool.getAllGenomes().stream()
+		return poolService.getAllGenomes().stream()
 				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.collect(Collectors.toList());
 	}
 
 	public void setFitnessScore(String genomeId, double fitnessScore) {
-		genomesPool.getGenome(genomeId).setFitnessScore(fitnessScore);
+		poolService.getGenome(genomeId).setFitnessScore(fitnessScore);
 	}
 
 }

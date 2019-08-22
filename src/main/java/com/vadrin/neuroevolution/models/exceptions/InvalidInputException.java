@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.commons.exceptions;
+package com.vadrin.neuroevolution.models.exceptions;
 
 public class InvalidInputException extends Exception {
 

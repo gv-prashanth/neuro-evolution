@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.genome;
+package com.vadrin.neuroevolution.models;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.neat;
+package com.vadrin.neuroevolution.services;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,24 +9,26 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.commons.NodeGeneType;
-import com.vadrin.neuroevolution.genome.ConnectionGene;
-import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.NodeGene;
+import com.vadrin.neuroevolution.models.ConnectionGene;
+import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.NodeGene;
+import com.vadrin.neuroevolution.models.NodeGeneType;
 
 @Service
-public class GenomesPool {
+public class PoolService {
 
 	private Map<String, Genome> pool = new HashMap<String, Genome>();
 
-	@Autowired
-	ConnectionsPool connectionsPool;
+	private int referenceNodeCounter = 0;
+	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 
-	@Autowired
-	NodesPool nodesPool;
+	private int referenceInnovationCounter = 0;
+	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
+
+	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
+	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
 
 	public Genome constructGenomeFromSampleConnectionGeneIds(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
@@ -45,7 +47,7 @@ public class GenomesPool {
 				constructedNodeGeneOfFrom = actualNodeGenes.stream()
 						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfFrom).findFirst().get();
 			} else {
-				constructedNodeGeneOfFrom = nodesPool.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfFrom,
+				constructedNodeGeneOfFrom = constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfFrom,
 						sampleTypeOfFrom);
 				actualNodeGenes.add(constructedNodeGeneOfFrom);
 			}
@@ -55,8 +57,7 @@ public class GenomesPool {
 				constructedNodeGeneOfTo = actualNodeGenes.stream()
 						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfTo).findFirst().get();
 			} else {
-				constructedNodeGeneOfTo = nodesPool.constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfTo,
-						sampleTypeOfTo);
+				constructedNodeGeneOfTo = constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfTo, sampleTypeOfTo);
 				actualNodeGenes.add(constructedNodeGeneOfTo);
 			}
 		}
@@ -67,7 +68,7 @@ public class GenomesPool {
 			NodeGene toNodeGene = actualNodeGenes.stream()
 					.filter(n -> n.getReferenceNodeNumber() == sampleConn.getToNode().getReferenceNodeNumber())
 					.findAny().get();
-			actualConnectionGenes.add(connectionsPool.constructConnectionGeneWithExistingInnovationNumber(
+			actualConnectionGenes.add(constructConnectionGeneWithExistingInnovationNumber(
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes);
@@ -93,11 +94,11 @@ public class GenomesPool {
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
 			NodeGeneType type) {
-		return nodesPool.constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber, type);
+		return constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber, type);
 	}
 
 	public NodeGene constructRandomNodeGene(Genome genome, NodeGeneType type) {
-		return nodesPool.constructRandomNodeGene(type);
+		return constructRandomNodeGene(type);
 	}
 
 	public void constructRandomGenomePool(int poolSize, int inputNodesSize, int outputNodesSize) {
@@ -114,10 +115,10 @@ public class GenomesPool {
 		Set<NodeGene> inputNodeGenes = new HashSet<NodeGene>();
 		Set<NodeGene> outputNodeGenes = new HashSet<NodeGene>();
 		for (int j = 0; j < inputNodesSize; j++) {
-			inputNodeGenes.add(nodesPool.constructRandomNodeGene(NodeGeneType.INPUT));
+			inputNodeGenes.add(constructRandomNodeGene(NodeGeneType.INPUT));
 		}
 		for (int j = 0; j < outputNodesSize; j++) {
-			outputNodeGenes.add(nodesPool.constructRandomNodeGene(NodeGeneType.OUTPUT));
+			outputNodeGenes.add(constructRandomNodeGene(NodeGeneType.OUTPUT));
 		}
 		// Instatiate Empty Connection Genes
 		Set<ConnectionGene> connectionGenes = new HashSet<ConnectionGene>();
@@ -127,7 +128,7 @@ public class GenomesPool {
 			Iterator<NodeGene> oitr = outputNodeGenes.stream().iterator();
 			while (oitr.hasNext()) {
 				NodeGene out = oitr.next();
-				connectionGenes.add(connectionsPool.constructConnectionGeneWithNewInnovationNumber(in, out));
+				connectionGenes.add(constructConnectionGeneWithNewInnovationNumber(in, out));
 			}
 			;
 		}
@@ -171,4 +172,46 @@ public class GenomesPool {
 		}
 		throw new NoSuchElementException();
 	}
+
+	protected NodeGene constructRandomNodeGene(NodeGeneType type) {
+		referenceNodeCounter++;
+		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
+		nodeGenesPool.put(toReturn.getId(), toReturn);
+		return toReturn;
+	}
+
+	protected NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
+		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
+		nodeGenesPool.put(toReturn.getId(), toReturn);
+		return toReturn;
+	}
+
+	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
+			NodeGene toNodeGene) {
+		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
+				MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
+	}
+
+	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
+			double weight) {
+		referenceInnovationCounter++;
+		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
+				referenceInnovationCounter);
+		connectionGenesPool.add(toReturn);
+		return toReturn;
+	}
+
+	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
+		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
+		connectionGenesPool.add(toReturn);
+		return toReturn;
+	}
+
+	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+			NodeGene fromNodeGene, NodeGene toNodeGene) {
+		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
+				MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
+	}
+
 }

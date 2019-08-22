@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.neat;
+package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,9 +8,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.commons.MathService;
-import com.vadrin.neuroevolution.genome.ConnectionGene;
-import com.vadrin.neuroevolution.genome.Genome;
+import com.vadrin.neuroevolution.models.ConnectionGene;
+import com.vadrin.neuroevolution.models.Genome;
 
 @Service
 public class CrossOverService {
@@ -27,14 +26,14 @@ public class CrossOverService {
 	SpeciationService speciationService;
 
 	@Autowired
-	GenomesPool genomesPool;
+	PoolService poolService;
 
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
 	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
 	
-	protected void crossOver() {
+	public void crossOver() {
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
 			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
 			int i = getNumberOfGenomesInSpecies(thisSpeciesId);
@@ -53,13 +52,13 @@ public class CrossOverService {
 
 	private Genome getRandomParentOfThisSpecies(Integer thisSpeciesId) {
 		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return genomesPool.getAllGenomes().stream()
+		return poolService.getAllGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
 				.get();
 	}
 
 	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
-		return (int) genomesPool.getAllGenomes().stream()
+		return (int) poolService.getAllGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
@@ -137,7 +136,7 @@ public class CrossOverService {
 				}
 			}
 		}
-		return genomesPool.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGenes);
+		return poolService.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGenes);
 	}
 
 }

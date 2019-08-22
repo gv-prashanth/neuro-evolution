@@ -1,6 +1,6 @@
-package com.vadrin.neuroevolution.genome;
+package com.vadrin.neuroevolution.models;
 
-import com.vadrin.neuroevolution.commons.MathService;
+import com.vadrin.neuroevolution.services.MathService;
 
 public class ConnectionGene extends Gene {
 

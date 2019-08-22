@@ -1,11 +1,9 @@
-package com.vadrin.neuroevolution.genome;
+package com.vadrin.neuroevolution.models;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import com.vadrin.neuroevolution.commons.NodeGeneType;
 
 public class Genome {
 
