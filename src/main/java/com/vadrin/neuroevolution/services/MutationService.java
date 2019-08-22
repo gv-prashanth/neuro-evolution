@@ -47,7 +47,7 @@ public class MutationService {
 		// your best fitness will go down if you keep mutating
 		// your best guy
 		prepare();
-		Iterator<Genome> genomeI = poolService.getAllGenomes().iterator();
+		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
 			if (!bestInThisSpecies(genome)) {
@@ -62,9 +62,9 @@ public class MutationService {
 	}
 
 	private boolean bestInThisSpecies(Genome genome) {
-		if (poolService.getAllGenomes().stream()
+		if (poolService.getGenomes().stream()
 				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > FIVE) {
-			return poolService.getAllGenomes().stream()
+			return poolService.getGenomes().stream()
 					.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
 					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 					.limit(NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION).findFirst().get()
@@ -92,7 +92,7 @@ public class MutationService {
 	}
 
 	private void mutationEnableDisableConnectionGene(Genome genome) {
-		genome.getSortedConnectionGenes().forEach(connectionGene -> {
+		genome.getConnectionGenesSorted().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORTOGGLEENABLEDISABLE)) {
 				connectionGene.setEnabled(!connectionGene.isEnabled());
 			}
@@ -100,7 +100,7 @@ public class MutationService {
 	}
 
 	private void mutationAlterWeightOfConnectionGene(Genome genome) {
-		genome.getSortedConnectionGenes().forEach(connectionGene -> {
+		genome.getConnectionGenesSorted().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
 				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
 					genome.getConnectionGene(connectionGene.getId()).setRandomWeight();
@@ -113,7 +113,7 @@ public class MutationService {
 	}
 
 	private void mutationAddNodeGene(Genome genome) {
-		Iterator<ConnectionGene> connIterator = genome.getSortedConnectionGenes().iterator();
+		Iterator<ConnectionGene> connIterator = genome.getConnectionGenesSorted().iterator();
 		while (connIterator.hasNext()) {
 			ConnectionGene connectionGene = connIterator.next();
 			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
@@ -154,7 +154,7 @@ public class MutationService {
 
 	private void mutationAddConnectionGene(Genome genome) {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
-		genome.getSortedNodeGenes().forEach(nodeGene -> {
+		genome.getNodeGenesSorted().forEach(nodeGene -> {
 			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
 				luckyPairs.add(nodeGene);
 			}

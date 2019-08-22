@@ -42,7 +42,7 @@ public class NEAT {
 	}
 
 	public Collection<Genome> getGenomes() {
-		return poolService.getAllGenomes();
+		return poolService.getGenomes();
 	}
 
 	public double[] process(String genomeId, double[] input) throws InvalidInputException {
@@ -61,7 +61,7 @@ public class NEAT {
 	}
 
 	public List<Genome> sortedBestGenomeInPool() {
-		return poolService.getAllGenomes().stream()
+		return poolService.getGenomes().stream()
 				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.collect(Collectors.toList());
 	}

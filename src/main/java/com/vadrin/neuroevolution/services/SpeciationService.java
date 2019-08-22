@@ -32,7 +32,7 @@ public class SpeciationService {
 
 	public void speciate() {
 		resetSpeciesPool();
-		Iterator<Genome> iterator = poolService.getAllGenomes().iterator();
+		Iterator<Genome> iterator = poolService.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
 			constructNewSpeciesWithGenome(firstGenome);
@@ -73,9 +73,9 @@ public class SpeciationService {
 	}
 
 	private boolean isSameSpecies(String genomeId, int speciesId) {
-		List<ConnectionGene> connectionList1 = poolService.getGenome(genomeId).getSortedConnectionGenes();
+		List<ConnectionGene> connectionList1 = poolService.getGenome(genomeId).getConnectionGenesSorted();
 		List<ConnectionGene> connectionList2 = poolService.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
-				.getSortedConnectionGenes();
+				.getConnectionGenesSorted();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[connectionList2.size()];

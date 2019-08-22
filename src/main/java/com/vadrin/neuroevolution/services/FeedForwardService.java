@@ -20,19 +20,19 @@ public class FeedForwardService {
 
 	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
-		if (genome.getSortedNodeGenes(NodeGeneType.INPUT).size() != input.length)
+		if (genome.getNodeGenesSorted(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
 
 		// Directly set for inputnodes
-		List<NodeGene> inputNodeGenes = genome.getSortedNodeGenes(NodeGeneType.INPUT);
+		List<NodeGene> inputNodeGenes = genome.getNodeGenesSorted(NodeGeneType.INPUT);
 		for (int i = 0; i < input.length; i++) {
 			inputNodeGenes.get(i).setOutput(input[i]);
 		}
 
 		// Process for hiddennodes in squence
-		List<NodeGene> hiddenNodeGenes = genome.getSortedNodeGenes(NodeGeneType.HIDDEN);
+		List<NodeGene> hiddenNodeGenes = genome.getNodeGenesSorted(NodeGeneType.HIDDEN);
 		for (NodeGene hiddenNodeGene : hiddenNodeGenes) {
-			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getSortedConnectionGenes().stream()
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenesSorted().stream()
 					.filter(thisConn -> thisConn.getToNode().getId() == hiddenNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
@@ -49,9 +49,9 @@ public class FeedForwardService {
 		}
 
 		// Process for outputnodes
-		List<NodeGene> outputNodeGenes = genome.getSortedNodeGenes(NodeGeneType.OUTPUT);
+		List<NodeGene> outputNodeGenes = genome.getNodeGenesSorted(NodeGeneType.OUTPUT);
 		for (NodeGene outputNodeGene : outputNodeGenes) {
-			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getSortedConnectionGenes().stream()
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenesSorted().stream()
 					.filter(thisConn -> thisConn.getToNode().getId() == outputNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
@@ -65,7 +65,7 @@ public class FeedForwardService {
 		}
 
 		// return the output values
-		List<NodeGene> toReturnList = genome.getSortedNodeGenes(NodeGeneType.OUTPUT);
+		List<NodeGene> toReturnList = genome.getNodeGenesSorted(NodeGeneType.OUTPUT);
 		double[] toReturnArray = new double[toReturnList.size()];
 		for (int i = 0; i < toReturnList.size(); i++) {
 			toReturnArray[i] = toReturnList.get(i).getOutput();

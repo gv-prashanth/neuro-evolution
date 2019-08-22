@@ -52,19 +52,19 @@ public class CrossOverService {
 
 	private Genome getRandomParentOfThisSpecies(Integer thisSpeciesId) {
 		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return poolService.getAllGenomes().stream()
+		return poolService.getGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
 				.get();
 	}
 
 	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
-		return (int) poolService.getAllGenomes().stream()
+		return (int) poolService.getGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
 	private Genome crossOver(Genome genome1, Genome genome2) {
-		List<ConnectionGene> connectionList1 = genome1.getSortedConnectionGenes();
-		List<ConnectionGene> connectionList2 = genome2.getSortedConnectionGenes();
+		List<ConnectionGene> connectionList1 = genome1.getConnectionGenesSorted();
+		List<ConnectionGene> connectionList2 = genome2.getConnectionGenesSorted();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[connectionList2.size()];
@@ -136,7 +136,7 @@ public class CrossOverService {
 				}
 			}
 		}
-		return poolService.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGenes);
+		return poolService.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
 	}
 
 }

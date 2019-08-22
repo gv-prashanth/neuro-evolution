@@ -19,7 +19,7 @@ import com.vadrin.neuroevolution.models.NodeGeneType;
 @Service
 public class PoolService {
 
-	private Map<String, Genome> pool = new HashMap<String, Genome>();
+	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
 
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
@@ -30,7 +30,7 @@ public class PoolService {
 	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
 	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
 
-	public Genome constructGenomeFromSampleConnectionGeneIds(Set<ConnectionGene> sampleConnectionGenes) {
+	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
 		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();
 
@@ -72,24 +72,20 @@ public class PoolService {
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes);
-		pool.put(toReturn.getId(), toReturn);
+		genomesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
 
-	public Collection<Genome> getAllGenomes() {
-		return pool.values();
+	public Collection<Genome> getGenomes() {
+		return genomesPool.values();
 	}
 
 	public Genome getGenome(String id) {
-		return pool.get(id);
+		return genomesPool.get(id);
 	}
 
-	public void killGenome(String toDel) {
-//		if(!pool.containsKey(toDel))
-//			throw new GenomeDoesNotExistException();
-		if (pool.remove(toDel) == null) {
-			System.out.println("THIS GENOME DOES ONT EVEN EXIST IN THE FIRST PLACE");
-		}
+	public void killGenome(String genomeId) {
+		genomesPool.remove(genomeId);
 	}
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
@@ -134,34 +130,34 @@ public class PoolService {
 		}
 		inputNodeGenes.addAll(outputNodeGenes);
 		Genome genome = new Genome(inputNodeGenes, connectionGenes);
-		pool.put(genome.getId(), genome);
+		genomesPool.put(genome.getId(), genome);
 		return genome;
 	}
 
 	private Genome constructCopyGenome(Genome oriGenome) {
-		Genome copyGenome = constructGenomeFromSampleConnectionGeneIds(
-				oriGenome.getSortedConnectionGenes().stream().collect(Collectors.toSet()));
-		pool.put(copyGenome.getId(), copyGenome);
+		Genome copyGenome = constructGenomeFromSampleConnectionGenes(
+				oriGenome.getConnectionGenesSorted().stream().collect(Collectors.toSet()));
+		genomesPool.put(copyGenome.getId(), copyGenome);
 		return copyGenome;
 	}
 
-	public Genome getGenomeWithConnection(String id) {
-		return pool.values().stream()
-				.filter(g -> g.getSortedConnectionGenes().stream().anyMatch(c -> c.getId().equalsIgnoreCase(id)))
+	public Genome getGenomeHavingConnection(String connectionId) {
+		return genomesPool.values().stream()
+				.filter(g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
 				.findFirst().get();
 	}
 
-	public Genome getGenomeWithNode(String id) {
-		return pool.values().stream()
-				.filter(g -> g.getSortedNodeGenes().stream().anyMatch(n -> n.getId().equalsIgnoreCase(id))).findFirst()
+	public Genome getGenomeHavingNode(String nodeId) {
+		return genomesPool.values().stream()
+				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId))).findFirst()
 				.get();
 	}
 
 	public int getInnovationNumber(int fromReferenceNodeNumber, int toReferenceNodeNumber) {
-		Iterator<Genome> allGenomes = this.getAllGenomes().iterator();
+		Iterator<Genome> allGenomes = this.getGenomes().iterator();
 		while (allGenomes.hasNext()) {
 			Genome thisGenome = allGenomes.next();
-			Iterator<ConnectionGene> allConnections = thisGenome.getSortedConnectionGenes().iterator();
+			Iterator<ConnectionGene> allConnections = thisGenome.getConnectionGenesSorted().iterator();
 			while (allConnections.hasNext()) {
 				ConnectionGene thisConnection = allConnections.next();
 				if (thisConnection.getFromNode().getReferenceNodeNumber() == thisConnection.getToNode()

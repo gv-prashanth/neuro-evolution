@@ -22,9 +22,9 @@ public class SelectionService {
 		// If yes how many to delete? and what to do after deleting?
 
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
-			poolService.getAllGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
+			poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
 					.sorted((a, b) -> Double.compare(a.getFitnessScore(), b.getFitnessScore()))
-					.limit((long) (PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * (poolService.getAllGenomes().stream()
+					.limit((long) (PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * (poolService.getGenomes().stream()
 							.filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)).count()))
 					.forEach(toDel -> poolService.killGenome(toDel.getId()));
 		});
