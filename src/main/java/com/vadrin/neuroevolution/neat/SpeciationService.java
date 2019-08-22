@@ -52,6 +52,7 @@ public class SpeciationService {
 				constructNewSpeciesWithGenome(genome);
 		}
 		loadSpeciesPoolSize();
+		System.out.println("Number of species in this generation: "+speciesPoolSize);
 	}
 
 	private void loadSpeciesPoolSize() {

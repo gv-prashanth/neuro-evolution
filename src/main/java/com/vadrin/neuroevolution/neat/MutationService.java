@@ -24,6 +24,7 @@ public class MutationService {
 
 	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUSMING GENOMES IN SPECIES IS
 																						// // > 5
+	private static final int FIVE = 5;
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
@@ -67,7 +68,7 @@ public class MutationService {
 
 	private boolean bestInThisSpecies(Genome genome) {
 		if (genomesService.getAllGenomes().stream()
-				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > 5) {
+				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > FIVE) {
 			return genomesService.getAllGenomes().stream()
 					.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
 					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
