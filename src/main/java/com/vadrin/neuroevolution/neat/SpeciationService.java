@@ -11,13 +11,12 @@ import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.genome.ConnectionGene;
 import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Service
 public class SpeciationService {
 
 	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	@Autowired
 	CrossOverService crossOverService;
@@ -33,7 +32,7 @@ public class SpeciationService {
 
 	protected void speciate() {
 		resetSpeciesPool();
-		Iterator<Genome> iterator = genomesService.getAllGenomes().iterator();
+		Iterator<Genome> iterator = genomesPool.getAllGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
 			constructNewSpeciesWithGenome(firstGenome);
@@ -74,8 +73,8 @@ public class SpeciationService {
 	}
 
 	private boolean isSameSpecies(String genomeId, int speciesId) {
-		List<ConnectionGene> connectionList1 = genomesService.getGenome(genomeId).getSortedConnectionGenes();
-		List<ConnectionGene> connectionList2 = genomesService.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
+		List<ConnectionGene> connectionList1 = genomesPool.getGenome(genomeId).getSortedConnectionGenes();
+		List<ConnectionGene> connectionList2 = genomesPool.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
 				.getSortedConnectionGenes();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);

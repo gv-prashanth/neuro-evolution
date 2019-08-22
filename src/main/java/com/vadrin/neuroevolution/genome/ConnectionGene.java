@@ -1,12 +1,17 @@
 package com.vadrin.neuroevolution.genome;
 
+import com.vadrin.neuroevolution.commons.MathService;
+
 public class ConnectionGene extends Gene {
 
 	private double weight;
 	private boolean enabled;
-	private String fromNodeGeneId;
-	private String toNodeGeneId;
+	private NodeGene fromNode;
+	private NodeGene toNode;
 	private int referenceInnovationNumber;
+
+	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
+	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
 
 	public double getWeight() {
 		return weight;
@@ -20,21 +25,21 @@ public class ConnectionGene extends Gene {
 		return referenceInnovationNumber;
 	}
 
-	public String getFromNodeGeneId() {
-		return fromNodeGeneId;
+	public NodeGene getFromNode() {
+		return fromNode;
 	}
 
-	public String getToNodeGeneId() {
-		return toNodeGeneId;
+	public NodeGene getToNode() {
+		return toNode;
 	}
 
-	protected ConnectionGene(double weight, boolean enabled, String fromNodeGeneId, String toNodeGeneId,
+	public ConnectionGene(double weight, boolean enabled, NodeGene fromNode, NodeGene toNode,
 			int referenceInnovationNumber) {
 		super();
 		this.weight = weight;
 		this.enabled = enabled;
-		this.fromNodeGeneId = fromNodeGeneId;
-		this.toNodeGeneId = toNodeGeneId;
+		this.fromNode = fromNode;
+		this.toNode = toNode;
 		this.referenceInnovationNumber = referenceInnovationNumber;
 	}
 
@@ -44,6 +49,10 @@ public class ConnectionGene extends Gene {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public void setRandomWeight() {
+		weight = MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND);
 	}
 
 }

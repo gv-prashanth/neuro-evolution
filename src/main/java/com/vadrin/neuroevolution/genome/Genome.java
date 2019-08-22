@@ -28,7 +28,7 @@ public class Genome {
 		return fitnessScore;
 	}
 
-	protected void setFitnessScore(double fitnessScore) {
+	public void setFitnessScore(double fitnessScore) {
 		this.fitnessScore = fitnessScore;
 	}
 
@@ -42,6 +42,14 @@ public class Genome {
 
 	public String getId() {
 		return id;
+	}
+	
+	public ConnectionGene getConnectionGene(String id) {
+		return this.connectionGenes.stream().filter(c -> c.getId().equalsIgnoreCase(id)).findFirst().get();
+	}
+
+	public NodeGene getNodeGene(String id) {
+		return nodeGenes.stream().filter(n -> n.getId().equalsIgnoreCase(id)).findFirst().get();
 	}
 
 	public List<NodeGene> getSortedNodeGenes(NodeGeneType type) {
@@ -61,12 +69,19 @@ public class Genome {
 				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
 				.collect(Collectors.toList());
 	}
+	
+	public boolean isConnectionPresentBetweenNodes(String fromNodeId, String toNodeId) {
+		return connectionGenes.stream()
+				.anyMatch(c -> c.getFromNode().getId().equalsIgnoreCase(fromNodeId)
+						&& c.getFromNode().getId().equalsIgnoreCase(toNodeId));
+	}
 
-	protected void addConnectionGene(ConnectionGene toAdd) {
+	public void addConnection(ConnectionGene toAdd) {
 		this.connectionGenes.add(toAdd);
 	}
 
-	protected void addNodeGene(NodeGene toAdd) {
-		this.nodeGenes.add(toAdd);
+	public void addNode(NodeGene newNodeGene) {
+		this.nodeGenes.add(newNodeGene);
 	}
+
 }

@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.genome;
+package com.vadrin.neuroevolution.neat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,9 +6,10 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.commons.NodeGeneType;
+import com.vadrin.neuroevolution.genome.NodeGene;
 
 @Service
-public class NodesService {
+public class NodesPool {
 
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
@@ -26,7 +27,4 @@ public class NodesService {
 		return toReturn;
 	}
 
-	protected NodeGene getNodeGene(String id) {
-		return nodeGenesPool.get(id);
-	}
 }

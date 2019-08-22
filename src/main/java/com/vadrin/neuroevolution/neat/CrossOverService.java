@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.vadrin.neuroevolution.commons.MathService;
 import com.vadrin.neuroevolution.genome.ConnectionGene;
 import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Service
 public class CrossOverService {
@@ -25,13 +24,10 @@ public class CrossOverService {
 //TODO: im not doing interspecies crossover
 
 	@Autowired
-	MathService mathService;
-
-	@Autowired
 	SpeciationService speciationService;
 
 	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
@@ -56,14 +52,14 @@ public class CrossOverService {
 	}
 
 	private Genome getRandomParentOfThisSpecies(Integer thisSpeciesId) {
-		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return genomesService.getAllGenomes().stream()
+		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
+		return genomesPool.getAllGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
 				.get();
 	}
 
 	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
-		return (int) genomesService.getAllGenomes().stream()
+		return (int) genomesPool.getAllGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
@@ -114,14 +110,14 @@ public class CrossOverService {
 
 		// We shall start by comparing column by column for each connectiongene as in
 		// NEAT crossover picture
-		Set<String> sampleConnectionGeneIds = new HashSet<String>();
+		Set<ConnectionGene> sampleConnectionGenes = new HashSet<ConnectionGene>();
 		for (int i = 0; i < ConnectionGeneMostlyEmpty1.length; i++) {
 			if (ConnectionGeneMostlyEmpty1[i] != null && ConnectionGeneMostlyEmpty2[i] != null) {
 				// Both present so Pick one of connectionGene
 				if (ConnectionGeneMostlyEmpty1[i].isLucky(CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT)) {
-					sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty1[i].getId());
+					sampleConnectionGenes.add(ConnectionGeneMostlyEmpty1[i]);
 				} else {
-					sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty2[i].getId());
+					sampleConnectionGenes.add(ConnectionGeneMostlyEmpty2[i]);
 				}
 			}
 			if ((ConnectionGeneMostlyEmpty1[i] == null && ConnectionGeneMostlyEmpty2[i] != null)
@@ -129,25 +125,19 @@ public class CrossOverService {
 				if (i < connectionGene1MaxInnovationNumber) {
 					// disjoing genes
 					if (ConnectionGeneMostlyEmpty1[i] != null) {
-						sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty1[i].getId());
+						sampleConnectionGenes.add(ConnectionGeneMostlyEmpty1[i]);
 					} else {
-						sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty2[i].getId());
+						sampleConnectionGenes.add(ConnectionGeneMostlyEmpty2[i]);
 					}
 				} else {
 					// excess genes. Pick only if excess is in max fit parent
-					if (genome2.getFitnessScore() > genome1.getFitnessScore()) {
-						try {
-							sampleConnectionGeneIds.add(ConnectionGeneMostlyEmpty2[i].getId());
-						}catch(NullPointerException e) {
-							//TODO: Need to fix this.. but for now its fine...
-							//e.printStackTrace();
-							//System.out.println("Need to fix this dam thing");
-						}
+					if ((genome2.getFitnessScore() > genome1.getFitnessScore()) && ConnectionGeneMostlyEmpty2[i]!=null) {
+						sampleConnectionGenes.add(ConnectionGeneMostlyEmpty2[i]);
 					}
 				}
 			}
 		}
-		return genomesService.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGeneIds);
+		return genomesPool.constructGenomeFromSampleConnectionGeneIds(sampleConnectionGenes);
 	}
 
 }

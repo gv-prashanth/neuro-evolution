@@ -10,13 +10,12 @@ import org.springframework.stereotype.Controller;
 
 import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
 import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.GenomesService;
 
 @Controller
 public class NEAT {
 
 	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	@Autowired
 	FeedForwardService feedForwardService;
@@ -34,15 +33,15 @@ public class NEAT {
 	MutationService mutationService;
 
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
-		genomesService.instantiateRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
+		genomesPool.constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
 	}
 
 	public Collection<Genome> getGenomes() {
-		return genomesService.getAllGenomes();
+		return genomesPool.getAllGenomes();
 	}
 
 	public double[] process(String genomeId, double[] input) throws InvalidInputException {
-		return feedForwardService.feedForward(genomesService.getGenome(genomeId), input);
+		return feedForwardService.feedForward(genomesPool.getGenome(genomeId), input);
 	}
 
 	public void stepOneGeneration() {
@@ -67,13 +66,13 @@ public class NEAT {
 	}
 
 	public List<Genome> sortedBestGenomeInPool() {
-		return genomesService.getAllGenomes().stream()
+		return genomesPool.getAllGenomes().stream()
 				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.collect(Collectors.toList());
 	}
 
 	public void setFitnessScore(String genomeId, double fitnessScore) {
-		genomesService.setFitnessScore(genomeId, fitnessScore);
+		genomesPool.getGenome(genomeId).setFitnessScore(fitnessScore);
 	}
 
 }

@@ -3,8 +3,6 @@ package com.vadrin.neuroevolution.neat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vadrin.neuroevolution.genome.GenomesService;
-
 @Service
 public class SelectionService {
 
@@ -12,7 +10,7 @@ public class SelectionService {
 	SpeciationService speciationService;
 
 	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
 	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
@@ -24,11 +22,11 @@ public class SelectionService {
 		// If yes how many to delete? and what to do after deleting?
 
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
-			genomesService.getAllGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
+			genomesPool.getAllGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
 					.sorted((a, b) -> Double.compare(a.getFitnessScore(), b.getFitnessScore()))
-					.limit((long) (PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * (genomesService.getAllGenomes().stream()
+					.limit((long) (PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES * (genomesPool.getAllGenomes().stream()
 							.filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)).count()))
-					.forEach(toDel -> genomesService.kill(toDel.getId()));
+					.forEach(toDel -> genomesPool.killGenome(toDel.getId()));
 		});
 	}
 

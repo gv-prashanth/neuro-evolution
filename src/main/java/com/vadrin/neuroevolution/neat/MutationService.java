@@ -16,7 +16,6 @@ import com.vadrin.neuroevolution.commons.MutationType;
 import com.vadrin.neuroevolution.commons.NodeGeneType;
 import com.vadrin.neuroevolution.genome.ConnectionGene;
 import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.GenomesService;
 import com.vadrin.neuroevolution.genome.NodeGene;
 
 @Service
@@ -33,13 +32,13 @@ public class MutationService {
 	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
 
 	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	@Autowired
 	SpeciationService speciationService;
 
 	@Autowired
-	MathService mathService;
+	ConnectionsPool connectionsPool;
 
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
@@ -52,7 +51,7 @@ public class MutationService {
 		// your best fitness will go down if you keep mutating
 		// your best guy
 		prepare();
-		Iterator<Genome> genomeI = genomesService.getAllGenomes().iterator();
+		Iterator<Genome> genomeI = genomesPool.getAllGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
 			if (!bestInThisSpecies(genome)) {
@@ -67,9 +66,9 @@ public class MutationService {
 	}
 
 	private boolean bestInThisSpecies(Genome genome) {
-		if (genomesService.getAllGenomes().stream()
+		if (genomesPool.getAllGenomes().stream()
 				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > FIVE) {
-			return genomesService.getAllGenomes().stream()
+			return genomesPool.getAllGenomes().stream()
 					.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
 					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 					.limit(NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION).findFirst().get()
@@ -108,10 +107,10 @@ public class MutationService {
 		genome.getSortedConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
 				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
-					genomesService.setRandomWeight(genome, connectionGene.getId());
+					genome.getConnectionGene(connectionGene.getId()).setRandomWeight();
 				} else {
 					connectionGene.setWeight(connectionGene.getWeight()
-							* mathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
+							* MathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
 				}
 			}
 		});
@@ -125,52 +124,41 @@ public class MutationService {
 				NodeGene newNodeGene;
 				try {
 					ConnectionGene refCon = luckyConnectionGenesInThisGeneration.keySet().stream()
-							.filter(oneOfLuckyConnectionGene -> genomesService
-									.getNodeGene(genome, oneOfLuckyConnectionGene.getFromNodeGeneId())
-									.getReferenceNodeNumber() == genomesService
-											.getNodeGene(genome, connectionGene.getFromNodeGeneId())
-											.getReferenceNodeNumber()
-									&& genomesService.getNodeGene(genome, oneOfLuckyConnectionGene.getToNodeGeneId())
-											.getReferenceNodeNumber() == genomesService
-													.getNodeGene(genome, connectionGene.getToNodeGeneId())
+							.filter(oneOfLuckyConnectionGene -> genome
+									.getNodeGene(oneOfLuckyConnectionGene.getFromNode().getId())
+									.getReferenceNodeNumber() == genome
+											.getNodeGene(connectionGene.getFromNode().getId()).getReferenceNodeNumber()
+									&& genome.getNodeGene(oneOfLuckyConnectionGene.getToNode().getId())
+											.getReferenceNodeNumber() == genome
+													.getNodeGene(connectionGene.getToNode().getId())
 													.getReferenceNodeNumber())
 							.findAny().get();
 					int referenceNodeNumber = luckyConnectionGenesInThisGeneration.get(refCon).getReferenceNodeNumber();
-					newNodeGene = genomesService.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
+					newNodeGene = genomesPool.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
 							NodeGeneType.HIDDEN);
 				} catch (NoSuchElementException e) {
-					newNodeGene = genomesService.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
+					newNodeGene = genomesPool.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
 					luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 				}
-				genomesService.addNode(genome, newNodeGene);
+				genome.addNode(newNodeGene);
 
 				// Now that the node is added. Lets make connections and also lets not forget to
 				// disable the prev connection
 				connectionGene.setEnabled(false);
-				ConnectionGene firstHalf = genomesService.constructConnectionGeneWithNewInnovationNumber(genome,
-						connectionGene.getFromNodeGeneId(), newNodeGene.getId(), 1.0d);
-				ConnectionGene secondHalf = genomesService.constructConnectionGeneWithNewInnovationNumber(genome,
-						newNodeGene.getId(), connectionGene.getToNodeGeneId(), connectionGene.getWeight());
+				ConnectionGene firstHalf = connectionsPool.constructConnectionGeneWithNewInnovationNumber(
+						connectionGene.getFromNode(), newNodeGene, 1.0d);
+				ConnectionGene secondHalf = connectionsPool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
+						connectionGene.getToNode(), connectionGene.getWeight());
 
-				genomesService.addConnection(genome, firstHalf);
-				genomesService.addConnection(genome, secondHalf);
+				genome.addConnection(firstHalf);
+				genome.addConnection(secondHalf);
 			}
 		}
 	}
 
 	private void mutationAddConnectionGene(Genome genome) {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
-		genome.getSortedNodeGenes(NodeGeneType.INPUT).forEach(nodeGene -> {
-			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
-				luckyPairs.add(nodeGene);
-			}
-		});
-		genome.getSortedNodeGenes(NodeGeneType.HIDDEN).forEach(nodeGene -> {
-			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
-				luckyPairs.add(nodeGene);
-			}
-		});
-		genome.getSortedNodeGenes(NodeGeneType.OUTPUT).forEach(nodeGene -> {
+		genome.getSortedNodeGenes().forEach(nodeGene -> {
 			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
 				luckyPairs.add(nodeGene);
 			}
@@ -188,19 +176,16 @@ public class MutationService {
 					NodeGene to = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n2 : n1;
 
 					// If no connection is already present between the two nodes
-					if (!genomesService.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
+					if (!genome.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
 						ConnectionGene toAdd = null;
 						try {
-							toAdd = genomesService
-									.constructConnectionGeneWithExistingInnovationNumber(
-											genome, genomesService.getInnovationNumber(genome,
-													from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
-											from.getId(), to.getId());
+							toAdd = connectionsPool.constructConnectionGeneWithExistingInnovationNumber(genomesPool
+									.getInnovationNumber(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
+									from, to);
 						} catch (NoSuchElementException e) {
-							toAdd = genomesService.constructConnectionGeneWithNewInnovationNumber(genome, from.getId(),
-									to.getId());
+							toAdd = connectionsPool.constructConnectionGeneWithNewInnovationNumber(from, to);
 						}
-						genomesService.addConnection(genome, toAdd);
+						genome.addConnection(toAdd);
 					}
 				}
 			}

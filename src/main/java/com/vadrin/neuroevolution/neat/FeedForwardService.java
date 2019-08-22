@@ -11,17 +11,13 @@ import com.vadrin.neuroevolution.commons.NodeGeneType;
 import com.vadrin.neuroevolution.commons.exceptions.InvalidInputException;
 import com.vadrin.neuroevolution.genome.ConnectionGene;
 import com.vadrin.neuroevolution.genome.Genome;
-import com.vadrin.neuroevolution.genome.GenomesService;
 import com.vadrin.neuroevolution.genome.NodeGene;
 
 @Service
 public class FeedForwardService {
-
+	
 	@Autowired
-	MathService mathService;
-
-	@Autowired
-	GenomesService genomesService;
+	GenomesPool genomesPool;
 
 	protected double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
@@ -38,7 +34,7 @@ public class FeedForwardService {
 		List<NodeGene> hiddenNodeGenes = genome.getSortedNodeGenes(NodeGeneType.HIDDEN);
 		for (NodeGene hiddenNodeGene : hiddenNodeGenes) {
 			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getSortedConnectionGenes().stream()
-					.filter(thisConn -> thisConn.getToNodeGeneId() == hiddenNodeGene.getId()).iterator();
+					.filter(thisConn -> thisConn.getToNode().getId() == hiddenNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
 				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
@@ -46,10 +42,10 @@ public class FeedForwardService {
 				// do only if its enabled... else you should skip it..
 				if (tempConnGene.isEnabled()) {
 					sumOfInput += tempConnGene.getWeight()
-							* genomesService.getFromNodeOfThisConnectionGene(tempConnGene.getId()).getOutput();
+							* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 				}
 			}
-			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
 			hiddenNodeGene.setOutput(finalOutput);
 		}
 
@@ -57,15 +53,15 @@ public class FeedForwardService {
 		List<NodeGene> outputNodeGenes = genome.getSortedNodeGenes(NodeGeneType.OUTPUT);
 		for (NodeGene outputNodeGene : outputNodeGenes) {
 			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getSortedConnectionGenes().stream()
-					.filter(thisConn -> thisConn.getToNodeGeneId() == outputNodeGene.getId()).iterator();
+					.filter(thisConn -> thisConn.getToNode().getId() == outputNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
 				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
 				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
 				sumOfInput += tempConnGene.getWeight()
-						* genomesService.getFromNodeOfThisConnectionGene(tempConnGene.getId()).getOutput();
+						* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 			}
-			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
 			outputNodeGene.setOutput(finalOutput);
 		}
 
