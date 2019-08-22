@@ -70,7 +70,7 @@ public class GenomesService {
 							.getNodeGene(sampleConn.getToNodeGeneId()).getReferenceNodeNumber())
 					.findAny().get().getId();
 			actualConnectionGenes.add(connectionsService.constructConnectionGeneWithExistingInnovationNumber(
-					sampleConn.getReferenceInnovationNumber(), sampleConn.getWeight(), fromNodeGeneId, toNodeGeneId));
+					sampleConn.getReferenceInnovationNumber(), fromNodeGeneId, toNodeGeneId));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes);
 		genomesPool.put(toReturn.getId(), toReturn);
@@ -157,14 +157,6 @@ public class GenomesService {
 		Genome firstRandomGenome = constructRandomGenome(inputNodesSize, outputNodesSize);
 		for (int i = 1; i < poolSize; i++) {
 			constructCopyGenome(firstRandomGenome);
-		}
-		Iterator<Genome> ifindissue = genomesPool.values().stream().iterator();
-		while (ifindissue.hasNext()) {
-			Genome issue = ifindissue.next();
-			if (issue.getSortedConnectionGenes().get(0).getReferenceInnovationNumber() == issue
-					.getSortedConnectionGenes().get(1).getReferenceInnovationNumber()) {
-				System.out.println("Im creating pool badly");
-			}
 		}
 	}
 
