@@ -10,9 +10,6 @@ public class ConnectionGene extends Gene {
 	private NodeGene toNode;
 	private int referenceInnovationNumber;
 
-	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
-	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
-
 	public double getWeight() {
 		return weight;
 	}
@@ -49,10 +46,6 @@ public class ConnectionGene extends Gene {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-	}
-
-	public void setRandomWeight() {
-		weight = MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND);
 	}
 
 }

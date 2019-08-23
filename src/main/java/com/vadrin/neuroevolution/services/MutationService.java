@@ -26,15 +26,20 @@ public class MutationService {
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
-	private static final double CHANCEFORADDINGNEWNODE = 0.03d;
+	private static final double CHANCEFORADDINGNEWNODE = 0.003d;
 	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
 	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
+	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
+	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
 
 	@Autowired
 	PoolService poolService;
 
 	@Autowired
 	SpeciationService speciationService;
+	
+	@Autowired
+	MathService mathService;
 
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
@@ -103,10 +108,10 @@ public class MutationService {
 		genome.getConnectionGenesSorted().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
 				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
-					genome.getConnectionGene(connectionGene.getId()).setRandomWeight();
+					connectionGene.setWeight(mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
 				} else {
 					connectionGene.setWeight(connectionGene.getWeight()
-							* MathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
+							* mathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
 				}
 			}
 		});

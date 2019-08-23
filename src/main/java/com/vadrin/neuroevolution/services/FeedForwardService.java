@@ -17,6 +17,9 @@ public class FeedForwardService {
 	
 	@Autowired
 	PoolService poolService;
+	
+	@Autowired
+	MathService mathService;
 
 	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
@@ -44,7 +47,7 @@ public class FeedForwardService {
 							* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 				}
 			}
-			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
 			hiddenNodeGene.setOutput(finalOutput);
 		}
 
@@ -60,7 +63,7 @@ public class FeedForwardService {
 				sumOfInput += tempConnGene.getWeight()
 						* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 			}
-			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
 			outputNodeGene.setOutput(finalOutput);
 		}
 

@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
@@ -29,6 +30,9 @@ public class PoolService {
 
 	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
 	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
+	
+	@Autowired
+	MathService mathService;
 
 	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
@@ -185,7 +189,7 @@ public class PoolService {
 	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
 			NodeGene toNodeGene) {
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
-				MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
+				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
 	}
 
 	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
@@ -207,7 +211,7 @@ public class PoolService {
 	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
-				MathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
+				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
 	}
 
 }

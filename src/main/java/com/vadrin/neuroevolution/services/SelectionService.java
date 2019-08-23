@@ -12,7 +12,7 @@ public class SelectionService {
 	@Autowired
 	PoolService poolService;
 
-	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.5;// 50%
+	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.25;// 50%
 	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
 
 	public void select() {

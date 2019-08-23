@@ -41,7 +41,7 @@ public class Genome {
 	public String getId() {
 		return id;
 	}
-	
+
 	public ConnectionGene getConnectionGene(String id) {
 		return this.connectionGenes.stream().filter(c -> c.getId().equalsIgnoreCase(id)).findFirst().get();
 	}
@@ -67,11 +67,10 @@ public class Genome {
 				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
 				.collect(Collectors.toList());
 	}
-	
+
 	public boolean isConnectionPresentBetweenNodes(String fromNodeId, String toNodeId) {
-		return connectionGenes.stream()
-				.anyMatch(c -> c.getFromNode().getId().equalsIgnoreCase(fromNodeId)
-						&& c.getFromNode().getId().equalsIgnoreCase(toNodeId));
+		return connectionGenes.stream().anyMatch(c -> c.getFromNode().getId().equalsIgnoreCase(fromNodeId)
+				&& c.getFromNode().getId().equalsIgnoreCase(toNodeId));
 	}
 
 	public void addConnection(ConnectionGene toAdd) {

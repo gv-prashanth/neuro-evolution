@@ -36,30 +36,18 @@ public class CrossOverService {
 	public void crossOver() {
 		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
 			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
-			int i = getNumberOfGenomesInSpecies(thisSpeciesId);
+			int i = speciationService.getNumberOfGenomesInSpecies(thisSpeciesId);
 			while(i < numberOfOriginalSpeciesPopToReach) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
-				Genome parent1 = getRandomParentOfThisSpecies(thisSpeciesId);
-				Genome parent2 = getRandomParentOfThisSpecies(thisSpeciesId);
+				Genome parent1 = speciationService.getRandomGenomeOfThisSpecies(thisSpeciesId);
+				Genome parent2 = speciationService.getRandomGenomeOfThisSpecies(thisSpeciesId);
 				Genome newGenome = crossOver(parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
 				i++;
 			}
 		});
-	}
-
-	private Genome getRandomParentOfThisSpecies(Integer thisSpeciesId) {
-		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
-				.get();
-	}
-
-	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
-		return (int) poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
 	private Genome crossOver(Genome genome1, Genome genome2) {

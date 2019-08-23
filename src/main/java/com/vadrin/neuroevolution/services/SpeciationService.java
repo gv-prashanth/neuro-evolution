@@ -20,6 +20,9 @@ public class SpeciationService {
 
 	@Autowired
 	CrossOverService crossOverService;
+	
+	@Autowired
+	MathService mathService;
 
 	private static final double C1 = 1.0d;
 	private static final double C2 = 1.0d;
@@ -56,7 +59,7 @@ public class SpeciationService {
 
 	private void loadSpeciesPoolSize() {
 		speciesPool.keySet().forEach(
-				speciesId -> speciesPoolSize.put(speciesId, crossOverService.getNumberOfGenomesInSpecies(speciesId)));
+				speciesId -> speciesPoolSize.put(speciesId, getNumberOfGenomesInSpecies(speciesId)));
 	}
 
 	private void resetSpeciesPool() {
@@ -158,6 +161,19 @@ public class SpeciationService {
 
 	public int getPreSelectSpeciesPoolSize(int speciesId) {
 		return speciesPoolSize.get(speciesId);
+	}
+	
+	public Genome getRandomGenomeOfThisSpecies(Integer thisSpeciesId) {
+		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
+		return poolService.getGenomes().stream()
+				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
+				.get();
+	}
+	
+
+	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
+		return (int) poolService.getGenomes().stream()
+				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
 }
