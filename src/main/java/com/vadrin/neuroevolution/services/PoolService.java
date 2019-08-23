@@ -30,7 +30,9 @@ public class PoolService {
 
 	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
 	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
-	
+
+	private int POOLCAPACITY;
+
 	@Autowired
 	MathService mathService;
 
@@ -109,6 +111,7 @@ public class PoolService {
 		for (int i = 1; i < poolSize; i++) {
 			constructCopyGenome(firstRandomGenome);
 		}
+		this.POOLCAPACITY = poolSize;
 	}
 
 	private Genome constructRandomGenome(int inputNodesSize, int outputNodesSize) {
@@ -146,15 +149,15 @@ public class PoolService {
 	}
 
 	public Genome getGenomeHavingConnection(String connectionId) {
-		return genomesPool.values().stream()
-				.filter(g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
+		return genomesPool.values().stream().filter(
+				g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
 				.findFirst().get();
 	}
 
 	public Genome getGenomeHavingNode(String nodeId) {
 		return genomesPool.values().stream()
-				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId))).findFirst()
-				.get();
+				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId)))
+				.findFirst().get();
 	}
 
 	public int getInnovationNumber(int fromReferenceNodeNumber, int toReferenceNodeNumber) {
@@ -212,6 +215,10 @@ public class PoolService {
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
 				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
+	}
+
+	public int getPOOLCAPACITY() {
+		return POOLCAPACITY;
 	}
 
 }

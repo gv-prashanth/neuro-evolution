@@ -1,8 +1,12 @@
 package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,29 +32,65 @@ public class CrossOverService {
 	@Autowired
 	PoolService poolService;
 
+	@Autowired
+	MathService mathService;
+
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
 	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
-	
+	private static final double POPULATIONCUTOFASPECIESFORNEXTGENERATION = 0.25d;
+
 	public void crossOver() {
-		speciationService.getSpeciesPool().keySet().forEach(thisSpeciesId -> {
+		// Intra species mating
+		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
 			int i = speciationService.getNumberOfGenomesInSpecies(thisSpeciesId);
-			while(i < numberOfOriginalSpeciesPopToReach) {
+			while (i < numberOfOriginalSpeciesPopToReach * POPULATIONCUTOFASPECIESFORNEXTGENERATION) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
 				Genome parent1 = speciationService.getRandomGenomeOfThisSpecies(thisSpeciesId);
 				Genome parent2 = speciationService.getRandomGenomeOfThisSpecies(thisSpeciesId);
-				Genome newGenome = crossOver(parent1, parent2);
+				Genome newGenome = constructGenomeByCrossingOver(parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
 				i++;
 			}
 		});
+
+		// Inter species mating
+		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
+
+		int soFarPool = poolService.getGenomes().size();
+		Iterator<Genome> fitnessSortedGenomes = poolService.getGenomes().stream()
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).iterator();
+		while (fitnessSortedGenomes.hasNext() && soFarPool < poolService.getPOOLCAPACITY()) {
+			Genome parent1 = fitnessSortedGenomes.next();
+			Genome parent2;
+			try {
+				parent2 = poolService.getGenomes().stream()
+						.filter(p2 -> p2.getReferenceSpeciesNumber() != parent1.getReferenceSpeciesNumber()).findAny()
+						.get();
+			} catch (NoSuchElementException e) {
+				// Means the whole pool is of same species. So we cant interspecies crossover.
+				parent2 = poolService.getGenomes().stream().findAny().get();
+			}
+			fatherMotherPairs.put(parent1, parent2);
+			soFarPool++;
+		}
+		fatherMotherPairs.forEach((f, m) -> {
+			Genome newGenome = constructGenomeByCrossingOver(f, m);
+			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
+		});
+
 	}
 
-	private Genome crossOver(Genome genome1, Genome genome2) {
+	private Genome constructGenomeByCrossingOver(Genome genome1, Genome genome2) {
+		if (poolService.getGenomes().size() >= poolService.getPOOLCAPACITY()) {
+			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
+			return null;
+		}
+
 		List<ConnectionGene> connectionList1 = genome1.getConnectionGenesSorted();
 		List<ConnectionGene> connectionList2 = genome2.getConnectionGenesSorted();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
@@ -118,7 +158,8 @@ public class CrossOverService {
 					}
 				} else {
 					// excess genes. Pick only if excess is in max fit parent
-					if ((genome2.getFitnessScore() > genome1.getFitnessScore()) && ConnectionGeneMostlyEmpty2[i]!=null) {
+					if ((genome2.getFitnessScore() > genome1.getFitnessScore())
+							&& ConnectionGeneMostlyEmpty2[i] != null) {
 						sampleConnectionGenes.add(ConnectionGeneMostlyEmpty2[i]);
 					}
 				}

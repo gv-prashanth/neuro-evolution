@@ -2,9 +2,11 @@ package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,7 @@ public class SpeciationService {
 
 	@Autowired
 	CrossOverService crossOverService;
-	
+
 	@Autowired
 	MathService mathService;
 
@@ -30,15 +32,18 @@ public class SpeciationService {
 	private static final double DELTAT = 3.0d;
 
 	private int referenceSpeciesCounter = 0;
-	private Map<Integer, String> speciesPool = new HashMap<Integer, String>();
+	private Map<Integer, String> speciesIdToReferenceGenome = new HashMap<Integer, String>();
 	private Map<Integer, Integer> speciesPoolSize = new HashMap<Integer, Integer>();
 
+	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUMINGGENOMESINSPECIESGREATERTHAN5
+	private static final int ASSUMINGGENOMESINSPECIESGREATERTHAN = 5;
+
 	public void speciate() {
-		resetSpeciesPool();
+		resetSpecies();
 		Iterator<Genome> iterator = poolService.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
-			constructNewSpeciesWithGenome(firstGenome);
+			markThisGenomeAsNewSpecies(firstGenome);
 		}
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
@@ -51,28 +56,28 @@ public class SpeciationService {
 				}
 			}
 			if (notDone)
-				constructNewSpeciesWithGenome(genome);
+				markThisGenomeAsNewSpecies(genome);
 		}
 		loadSpeciesPoolSize();
-		System.out.println("Number of species in this generation: "+speciesPoolSize);
+		System.out.println("Number of species in this generation: " + speciesPoolSize);
 	}
 
 	private void loadSpeciesPoolSize() {
-		speciesPool.keySet().forEach(
-				speciesId -> speciesPoolSize.put(speciesId, getNumberOfGenomesInSpecies(speciesId)));
+		speciesIdToReferenceGenome.keySet()
+				.forEach(speciesId -> speciesPoolSize.put(speciesId, getNumberOfGenomesInSpecies(speciesId)));
 	}
 
-	private void resetSpeciesPool() {
-		speciesPool = new HashMap<Integer, String>();
+	private void resetSpecies() {
+		speciesIdToReferenceGenome = new HashMap<Integer, String>();
 		speciesPoolSize = new HashMap<Integer, Integer>();
 		referenceSpeciesCounter = 0;
 	}
 
-	private void constructNewSpeciesWithGenome(Genome genome) {
+	private void markThisGenomeAsNewSpecies(Genome genome) {
 		referenceSpeciesCounter++;
 		genome.setReferenceSpeciesNumber(referenceSpeciesCounter);
 		String singleGenomeId = genome.getId();
-		speciesPool.put(genome.getReferenceSpeciesNumber(), singleGenomeId);
+		speciesIdToReferenceGenome.put(genome.getReferenceSpeciesNumber(), singleGenomeId);
 	}
 
 	private boolean isSameSpecies(String genomeId, int speciesId) {
@@ -152,28 +157,44 @@ public class SpeciationService {
 	}
 
 	private String getReferenceGenomeOfSpeciesId(int speciesId) {
-		return this.speciesPool.get(speciesId);
+		return this.speciesIdToReferenceGenome.get(speciesId);
 	}
 
-	public Map<Integer, String> getSpeciesPool() {
-		return speciesPool;
+	public Set<Integer> getSpeciesIds() {
+		return speciesIdToReferenceGenome.keySet();
 	}
 
 	public int getPreSelectSpeciesPoolSize(int speciesId) {
 		return speciesPoolSize.get(speciesId);
 	}
-	
+
 	public Genome getRandomGenomeOfThisSpecies(Integer thisSpeciesId) {
 		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).skip(randomPos).findFirst()
-				.get();
+		return poolService.getGenomes().stream().filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId)
+				.skip(randomPos).findFirst().get();
 	}
-	
 
 	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
 		return (int) poolService.getGenomes().stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
+	}
+
+	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(Integer thisSpeciesId) {
+		Set<Genome> genomesToKill = new HashSet<Genome>();
+		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
+				.forEach(g -> genomesToKill.add(g));
+		genomesToKill.forEach(g -> poolService.killGenome(g.getId()));
+		speciesIdToReferenceGenome.remove(thisSpeciesId);
+		loadSpeciesPoolSize();
+	}
+
+	public boolean bestInItsSpecies(Genome genome) {
+		// TODO: Need to think if i should limit by 1 or by
+		// NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION
+		return poolService.getGenomes().stream()
+				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
+				.anyMatch(top -> top.getId().equalsIgnoreCase(genome.getId()));
 	}
 
 }

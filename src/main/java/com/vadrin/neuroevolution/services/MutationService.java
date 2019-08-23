@@ -20,9 +20,6 @@ import com.vadrin.neuroevolution.models.NodeGeneType;
 @Service
 public class MutationService {
 
-	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUSMING GENOMES IN SPECIES IS
-																						// // > 5
-	private static final int FIVE = 5;
 	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
 	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
@@ -37,7 +34,7 @@ public class MutationService {
 
 	@Autowired
 	SpeciationService speciationService;
-	
+
 	@Autowired
 	MathService mathService;
 
@@ -55,7 +52,7 @@ public class MutationService {
 		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
-			if (!bestInThisSpecies(genome)) {
+			if (!speciationService.bestInItsSpecies(genome)) {
 				Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 						.iterator();
 				while (mTypeI.hasNext()) {
@@ -63,19 +60,6 @@ public class MutationService {
 					mutate(genome, mutationType);
 				}
 			}
-		}
-	}
-
-	private boolean bestInThisSpecies(Genome genome) {
-		if (poolService.getGenomes().stream()
-				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber()).count() > FIVE) {
-			return poolService.getGenomes().stream()
-					.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
-					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
-					.limit(NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION).findFirst().get()
-					.getId() == genome.getId();
-		} else {
-			return false;
 		}
 	}
 
