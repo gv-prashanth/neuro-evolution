@@ -1,7 +1,5 @@
 package com.vadrin.neuroevolution.models;
 
-import com.vadrin.neuroevolution.services.MathService;
-
 public class ConnectionGene extends Gene {
 
 	private double weight;

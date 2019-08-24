@@ -66,8 +66,4 @@ public class NEAT {
 				.collect(Collectors.toList());
 	}
 
-	public void setFitnessScore(String genomeId, double fitnessScore) {
-		poolService.getGenome(genomeId).setFitnessScore(fitnessScore);
-	}
-
 }

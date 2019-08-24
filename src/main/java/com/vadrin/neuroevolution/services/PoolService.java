@@ -176,26 +176,26 @@ public class PoolService {
 		throw new NoSuchElementException();
 	}
 
-	protected NodeGene constructRandomNodeGene(NodeGeneType type) {
+	public NodeGene constructRandomNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
 		nodeGenesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
 
-	protected NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
+	public NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
 		nodeGenesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
 
-	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
+	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
 			NodeGene toNodeGene) {
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
 				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
 	}
 
-	protected ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
+	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
 			double weight) {
 		referenceInnovationCounter++;
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
@@ -204,14 +204,14 @@ public class PoolService {
 		return toReturn;
 	}
 
-	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
 		connectionGenesPool.add(toReturn);
 		return toReturn;
 	}
 
-	protected ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
 				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
