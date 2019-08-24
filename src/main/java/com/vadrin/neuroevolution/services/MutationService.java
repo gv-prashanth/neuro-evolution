@@ -38,6 +38,9 @@ public class MutationService {
 	@Autowired
 	MathService mathService;
 
+	@Autowired
+	SelectionService selectionService;
+
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	private void prepare() {
@@ -52,7 +55,8 @@ public class MutationService {
 		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
-			if (!speciationService.bestInItsSpecies(genome)) {
+			if (!selectionService.bestAndMostImportantAndSpeciesWinnersAndNeverKill().stream()
+					.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 				Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 						.iterator();
 				while (mTypeI.hasNext()) {

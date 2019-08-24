@@ -188,13 +188,4 @@ public class SpeciationService {
 		loadSpeciesPoolSize();
 	}
 
-	public boolean bestInItsSpecies(Genome genome) {
-		// TODO: Need to think if i should limit by 1 or by
-		// NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION
-		return poolService.getGenomes().stream()
-				.filter(g -> g.getReferenceSpeciesNumber() == genome.getReferenceSpeciesNumber())
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
-				.anyMatch(top -> top.getId().equalsIgnoreCase(genome.getId()));
-	}
-
 }
