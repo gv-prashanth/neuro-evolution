@@ -24,6 +24,7 @@ public class PoolService {
 	private MathService mathService;
 
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
+	//TODO: need to rename the below variable to a meaningful way
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 	private int referenceInnovationCounter = 0;

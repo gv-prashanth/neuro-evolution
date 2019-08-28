@@ -1,8 +1,6 @@
 package com.vadrin.neuroevolution.controllers;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -58,12 +56,6 @@ public class NEAT {
 		crossOverService.crossOver();
 		// mutate the ONLY NEW ONES OR ALL???
 		mutationService.mutate();
-	}
-
-	public List<Genome> sortedBestGenomeInPool() {
-		return poolService.getGenomes().stream()
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
-				.collect(Collectors.toList());
 	}
 
 }

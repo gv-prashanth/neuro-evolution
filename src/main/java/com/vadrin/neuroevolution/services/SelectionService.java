@@ -1,7 +1,7 @@
 package com.vadrin.neuroevolution.services;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,12 +37,10 @@ public class SelectionService {
 		});
 	}
 
-	public List<String> bestAndMostImportantAndSpeciesWinnersAndNeverKill() {
+	public Set<String> bestAndMostImportantAndSpeciesWinnersAndNeverKill() {
 		// TODO: Need to think if i should limit by 1 or by
 		// NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION
-		List<String> toReturn = new ArrayList<String>();
-		poolService.getGenomes().stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
-				.limit(RANKTOBESOASTOBEBESTINTHEPOOL).forEach(g -> toReturn.add(g.getId()));
+		Set<String> toReturn = new HashSet<String>();
 		speciationService.getSpeciesIds().stream().forEach(s -> {
 			poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == s)
 					.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))

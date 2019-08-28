@@ -38,6 +38,7 @@ public class MutationService {
 	@Autowired
 	private SelectionService selectionService;
 
+	//TODO: Need to get rid of this below variable.
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	private void prepare() {
