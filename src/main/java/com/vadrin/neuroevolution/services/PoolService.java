@@ -20,16 +20,17 @@ import com.vadrin.neuroevolution.models.NodeGeneType;
 @Service
 public class PoolService {
 
+	@Autowired
+	private MathService mathService;
+
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
+	//TODO: Need to get rid of this below variable
 	private int POOLCAPACITY;
-
-	@Autowired
-	MathService mathService;
-
+	
 	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
 		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();

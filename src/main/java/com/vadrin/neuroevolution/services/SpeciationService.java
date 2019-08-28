@@ -17,26 +17,22 @@ import com.vadrin.neuroevolution.models.Genome;
 @Service
 public class SpeciationService {
 
-	@Autowired
-	PoolService poolService;
-
-	@Autowired
-	CrossOverService crossOverService;
-
-	@Autowired
-	MathService mathService;
-
 	private static final double C1 = 1.0d;
 	private static final double C2 = 1.0d;
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
+	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUMINGGENOMESINSPECIESGREATERTHAN5
+	private static final int ASSUMINGGENOMESINSPECIESGREATERTHAN = 5;
+	
+	@Autowired
+	private PoolService poolService;
 
+	@Autowired
+	private MathService mathService;
+	
 	private int referenceSpeciesCounter = 0;
 	private Map<Integer, String> speciesIdToReferenceGenome = new HashMap<Integer, String>();
 	private Map<Integer, Integer> speciesPoolSize = new HashMap<Integer, Integer>();
-
-	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUMINGGENOMESINSPECIESGREATERTHAN5
-	private static final int ASSUMINGGENOMESINSPECIESGREATERTHAN = 5;
 
 	public void speciate() {
 		resetSpecies();

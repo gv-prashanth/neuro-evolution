@@ -26,21 +26,21 @@ public class CrossOverService {
 
 //TODO: im not doing interspecies crossover
 
-	@Autowired
-	SpeciationService speciationService;
-
-	@Autowired
-	PoolService poolService;
-
-	@Autowired
-	MathService mathService;
-
 	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
 	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
 	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
 	private static final double POPULATIONCUTOFASPECIESFORNEXTGENERATION = 0.25d;
 
+	@Autowired
+	private SpeciationService speciationService;
+
+	@Autowired
+	private PoolService poolService;
+
+	@Autowired
+	private MathService mathService;
+	
 	public void crossOver() {
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {

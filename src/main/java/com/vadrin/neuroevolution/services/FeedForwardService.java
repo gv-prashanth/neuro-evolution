@@ -16,10 +16,10 @@ import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 public class FeedForwardService {
 	
 	@Autowired
-	PoolService poolService;
+	private PoolService poolService;
 	
 	@Autowired
-	MathService mathService;
+	private MathService mathService;
 
 	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate

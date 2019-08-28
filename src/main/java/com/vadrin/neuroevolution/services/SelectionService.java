@@ -9,17 +9,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class SelectionService {
 
-	@Autowired
-	SpeciationService speciationService;
-
-	@Autowired
-	PoolService poolService;
-
 	private static final double PERCENTOFCHAMPIONSTOSELECTINEACHSPECIES = 0.20;// 20%
 	private static final int GENERATIONTHRESHOLDTOKILLEVERYONEINSPECIES = 15;
-
 	private static final int RANKTOBESOASTOBEBESTINTHEPOOL = 5;
 
+	@Autowired
+	private SpeciationService speciationService;
+
+	@Autowired
+	private PoolService poolService;
+	
 	public void select() {
 
 		// Remove all species whose average fitness didnt increase since 15 generations

@@ -30,16 +30,16 @@ public class MutationService {
 	protected static final double RANDOMWEIGHTUPPERBOUND = 40d;
 
 	@Autowired
-	PoolService poolService;
+	private PoolService poolService;
 
 	@Autowired
-	SpeciationService speciationService;
+	private SpeciationService speciationService;
 
 	@Autowired
-	MathService mathService;
+	private MathService mathService;
 
 	@Autowired
-	SelectionService selectionService;
+	private SelectionService selectionService;
 
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
