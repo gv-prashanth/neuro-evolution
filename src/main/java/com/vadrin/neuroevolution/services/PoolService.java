@@ -21,16 +21,10 @@ import com.vadrin.neuroevolution.models.NodeGeneType;
 public class PoolService {
 
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
-
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
-
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
-
-	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
-	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
-
 	private int POOLCAPACITY;
 
 	@Autowired
@@ -192,7 +186,7 @@ public class PoolService {
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
 			NodeGene toNodeGene) {
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
-				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
+				mathService.randomNumber(MutationService.RANDOMWEIGHTLOWERBOUND, MutationService.RANDOMWEIGHTUPPERBOUND));
 	}
 
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
@@ -214,7 +208,7 @@ public class PoolService {
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
-				mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
+				mathService.randomNumber(MutationService.RANDOMWEIGHTLOWERBOUND, MutationService.RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
 	}
 
 	public int getPOOLCAPACITY() {

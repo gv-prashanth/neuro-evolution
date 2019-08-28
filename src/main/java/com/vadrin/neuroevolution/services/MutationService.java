@@ -26,8 +26,8 @@ public class MutationService {
 	private static final double CHANCEFORADDINGNEWNODE = 0.003d;
 	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
 	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
-	private static final double RANDOMWEIGHTLOWERBOUND = -20d;
-	private static final double RANDOMWEIGHTUPPERBOUND = 20d;
+	protected static final double RANDOMWEIGHTLOWERBOUND = -40d;
+	protected static final double RANDOMWEIGHTUPPERBOUND = 40d;
 
 	@Autowired
 	PoolService poolService;
