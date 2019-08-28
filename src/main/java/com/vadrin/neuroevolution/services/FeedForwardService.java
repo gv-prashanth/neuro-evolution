@@ -26,6 +26,9 @@ public class FeedForwardService {
 		if (genome.getNodeGenesSorted(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
 
+		//cleanup any previous run stale outputs
+		genome.getNodeGenesSorted().forEach(n -> n.setOutput(0d));
+
 		// Directly set for inputnodes
 		List<NodeGene> inputNodeGenes = genome.getNodeGenesSorted(NodeGeneType.INPUT);
 		for (int i = 0; i < input.length; i++) {
