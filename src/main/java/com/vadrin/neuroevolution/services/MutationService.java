@@ -33,9 +33,6 @@ public class MutationService {
 	private PoolService poolService;
 
 	@Autowired
-	private SpeciationService speciationService;
-
-	@Autowired
 	private MathService mathService;
 
 	@Autowired

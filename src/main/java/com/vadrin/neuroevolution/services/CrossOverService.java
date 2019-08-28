@@ -37,9 +37,6 @@ public class CrossOverService {
 
 	@Autowired
 	private PoolService poolService;
-
-	@Autowired
-	private MathService mathService;
 	
 	public void crossOver() {
 		// Intra species mating
