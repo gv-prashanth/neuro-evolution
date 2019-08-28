@@ -20,15 +20,17 @@ import com.vadrin.neuroevolution.models.NodeGeneType;
 @Service
 public class MutationService {
 
-	private static final double CHANCEFORWEIGHTMUTATION = 0.8d; // 0.8 MEANS 80%
-	private static final double CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT = 0.1d; // 0.1 MEANS 10%
-	private static final double PERTUBEDVARIANCEDIFFERENCE = 0.05d;
-	private static final double CHANCEFORADDINGNEWNODE = 0.003d;
-	private static final double CHANCEFORTOGGLEENABLEDISABLE = 0.03d;
-	private static final double CHANCEFORADDINGNEWCONNECTION = 0.05d;
-	protected static final double RANDOMWEIGHTLOWERBOUND = -40d;
-	protected static final double RANDOMWEIGHTUPPERBOUND = 40d;
-
+	private static final double CHANCE_FOR_WEIGHT_MUTATION = 0.8d; // 0.8 MEANS 80%
+	private static final double IF_WEIGHT_MUTATION_THEN_CHANCE_FOR_RANDOM_WEIGHT = 0.1d; // 0.1 MEANS 10%
+	//TODO: paper suggest this value as 0.03. Need to verify what to use
+	private static final double CHANCE_FOR_ADDING_NEW_NODE = 0.003d;
+	private static final double CHANCE_FOR_ADDING_NEW_CONNECTION = 0.05d;
+	//TODO: looks like below is necessary although not mentioned in paper. just have to figure right value
+	private static final double X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE = 0.05d; //Plus or minus 5%
+	private static final double X_CHANCE_FOR_TOGGLING_GENOME_ENABLE_FLAG = 0.03d;
+	protected static final double X_RANDOM_WEIGHT_LOWER_BOUND = -40d;
+	protected static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
+	
 	@Autowired
 	private PoolService poolService;
 
@@ -53,7 +55,7 @@ public class MutationService {
 		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
-			if (!selectionService.bestAndMostImportantAndSpeciesWinnersAndNeverKill().stream()
+			if (!selectionService.championsWhoShouldntBeHarmed().stream()
 					.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 				Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 						.iterator();
@@ -84,7 +86,7 @@ public class MutationService {
 
 	private void mutationEnableDisableConnectionGene(Genome genome) {
 		genome.getConnectionGenesSorted().forEach(connectionGene -> {
-			if (connectionGene.isLucky(CHANCEFORTOGGLEENABLEDISABLE)) {
+			if (connectionGene.isLucky(X_CHANCE_FOR_TOGGLING_GENOME_ENABLE_FLAG)) {
 				connectionGene.setEnabled(!connectionGene.isEnabled());
 			}
 		});
@@ -92,12 +94,12 @@ public class MutationService {
 
 	private void mutationAlterWeightOfConnectionGene(Genome genome) {
 		genome.getConnectionGenesSorted().forEach(connectionGene -> {
-			if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATION)) {
-				if (connectionGene.isLucky(CHANCEFORWEIGHTMUTATIONWITHRANDOMREPLACEWEIGHT)) {
-					connectionGene.setWeight(mathService.randomNumber(RANDOMWEIGHTLOWERBOUND, RANDOMWEIGHTUPPERBOUND));
+			if (connectionGene.isLucky(CHANCE_FOR_WEIGHT_MUTATION)) {
+				if (connectionGene.isLucky(IF_WEIGHT_MUTATION_THEN_CHANCE_FOR_RANDOM_WEIGHT)) {
+					connectionGene.setWeight(mathService.randomNumber(X_RANDOM_WEIGHT_LOWER_BOUND, X_RANDOM_WEIGHT_UPPER_BOUND));
 				} else {
 					connectionGene.setWeight(connectionGene.getWeight()
-							* mathService.randomNumber(1 - PERTUBEDVARIANCEDIFFERENCE, 1 + PERTUBEDVARIANCEDIFFERENCE));
+							* mathService.randomNumber(1 - X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE, 1 + X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE));
 				}
 			}
 		});
@@ -107,7 +109,7 @@ public class MutationService {
 		Iterator<ConnectionGene> connIterator = genome.getConnectionGenesSorted().iterator();
 		while (connIterator.hasNext()) {
 			ConnectionGene connectionGene = connIterator.next();
-			if (connectionGene.isLucky(CHANCEFORADDINGNEWNODE)) {
+			if (connectionGene.isLucky(CHANCE_FOR_ADDING_NEW_NODE)) {
 				NodeGene newNodeGene;
 				try {
 					ConnectionGene refCon = luckyConnectionGenesInThisGeneration.keySet().stream()
@@ -146,7 +148,7 @@ public class MutationService {
 	private void mutationAddConnectionGene(Genome genome) {
 		Set<NodeGene> luckyPairs = new HashSet<NodeGene>();
 		genome.getNodeGenesSorted().forEach(nodeGene -> {
-			if (nodeGene.isLucky(CHANCEFORADDINGNEWCONNECTION)) {
+			if (nodeGene.isLucky(CHANCE_FOR_ADDING_NEW_CONNECTION)) {
 				luckyPairs.add(nodeGene);
 			}
 		});

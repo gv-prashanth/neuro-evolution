@@ -188,7 +188,7 @@ public class PoolService {
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
 			NodeGene toNodeGene) {
 		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
-				mathService.randomNumber(MutationService.RANDOMWEIGHTLOWERBOUND, MutationService.RANDOMWEIGHTUPPERBOUND));
+				mathService.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
@@ -210,7 +210,7 @@ public class PoolService {
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
-				mathService.randomNumber(MutationService.RANDOMWEIGHTLOWERBOUND, MutationService.RANDOMWEIGHTUPPERBOUND), fromNodeGene, toNodeGene);
+				mathService.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND), fromNodeGene, toNodeGene);
 	}
 
 	public int getPOOLCAPACITY() {

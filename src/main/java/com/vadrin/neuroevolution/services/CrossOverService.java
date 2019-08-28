@@ -20,17 +20,18 @@ public class CrossOverService {
 
 //TODO: Need to implement the below code
 //	if (!ConnectionGeneMostlyEmpty1[i].isEnabled() && !ConnectionGeneMostlyEmpty2[i].isEnabled()
-//			&& toAdd.isLucky(1 - CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS)) {
+//			&& toAdd.isLucky(1 - CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS)) {
 //		toAdd.setEnabled(true);
 //	}
 
 //TODO: im not doing interspecies crossover
 
-	private static final double CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT = 0.5d; // half
-	private static final double CHANCEFORGENEDISABLEDIFDISABLEDINBOTHPARENTS = 0.75d; // 0.75 MEANS 75%
-	private static final double CHANCEFOROFFSPRINGFROMMUTATIONALONEWITHOUTCROSSOVER = 0.25d; // 0.25 MEANS 25%
-	private static final double CHANCEFORINTERSPECIESMATING = 0.001d;
-	private static final double POPULATIONCUTOFASPECIESFORNEXTGENERATION = 0.25d;
+	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
+	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
+	private static final double PERCENTAGE_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
+	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
+	//TODO: Need to get rid of below custom configuration
+	private static final double X_POPULATION_CUTOFF_SPECIES_FOR_NEXT_GENERATION = 0.25d;
 
 	@Autowired
 	private SpeciationService speciationService;
@@ -43,7 +44,7 @@ public class CrossOverService {
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
 			int i = speciationService.getNumberOfGenomesInSpecies(thisSpeciesId);
-			while (i < numberOfOriginalSpeciesPopToReach * POPULATIONCUTOFASPECIESFORNEXTGENERATION) {
+			while (i < numberOfOriginalSpeciesPopToReach * X_POPULATION_CUTOFF_SPECIES_FOR_NEXT_GENERATION) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
@@ -138,7 +139,7 @@ public class CrossOverService {
 		for (int i = 0; i < ConnectionGeneMostlyEmpty1.length; i++) {
 			if (ConnectionGeneMostlyEmpty1[i] != null && ConnectionGeneMostlyEmpty2[i] != null) {
 				// Both present so Pick one of connectionGene
-				if (ConnectionGeneMostlyEmpty1[i].isLucky(CHANCEFORGENETOBEPICKEDUPFROMEITHEROFPARENT)) {
+				if (ConnectionGeneMostlyEmpty1[i].isLucky(CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT)) {
 					sampleConnectionGenes.add(ConnectionGeneMostlyEmpty1[i]);
 				} else {
 					sampleConnectionGenes.add(ConnectionGeneMostlyEmpty2[i]);

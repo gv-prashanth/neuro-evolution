@@ -21,8 +21,6 @@ public class SpeciationService {
 	private static final double C2 = 1.0d;
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
-	private static final int NUMBEROFCHAMPIONSTOGETWILDCARDENTRYTONEXTGENERATION = 1; // ASSUMINGGENOMESINSPECIESGREATERTHAN5
-	private static final int ASSUMINGGENOMESINSPECIESGREATERTHAN = 5;
 	
 	@Autowired
 	private PoolService poolService;
@@ -175,6 +173,7 @@ public class SpeciationService {
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
+	//TODO: Need to use or get rid of the below method
 	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(Integer thisSpeciesId) {
 		Set<Genome> genomesToKill = new HashSet<Genome>();
 		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
