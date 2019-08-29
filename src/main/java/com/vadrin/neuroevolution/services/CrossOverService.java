@@ -18,19 +18,12 @@ import com.vadrin.neuroevolution.models.Genome;
 @Service
 public class CrossOverService {
 
-//TODO: Need to implement the below code
-//	if (!ConnectionGeneMostlyEmpty1[i].isEnabled() && !ConnectionGeneMostlyEmpty2[i].isEnabled()
-//			&& toAdd.isLucky(1 - CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS)) {
-//		toAdd.setEnabled(true);
-//	}
-
-//TODO: im not doing interspecies crossover in the right way
-
 	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double PERCENTAGE_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
+	//TODO: im not doing interspecies crossover in the right way
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
-	//TODO: Need to get rid of below custom configuration
+	// TODO: Need to get rid of below custom configuration
 	private static final double X_POPULATION_CUTOFF_SPECIES_FOR_NEXT_GENERATION = 0.25d;
 
 	@Autowired
@@ -38,7 +31,7 @@ public class CrossOverService {
 
 	@Autowired
 	private PoolService poolService;
-	
+
 	public void crossOver() {
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
@@ -83,7 +76,7 @@ public class CrossOverService {
 
 	}
 
-	private Genome constructGenomeByCrossingOver(Genome genome1, Genome genome2) {
+	private Genome constructGenomeByCrossingOver(final Genome genome1, final Genome genome2) {
 		if (poolService.getGenomes().size() >= poolService.getPOOLCAPACITY()) {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;
@@ -99,13 +92,16 @@ public class CrossOverService {
 		if (connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()) {
-			ConnectionGene[] temp = connectionGenes1;
-			connectionGenes1 = connectionGenes2;
-			connectionGenes2 = temp;
-
-			Genome tempGenome = genome1;
-			genome1 = genome2;
-			genome2 = tempGenome;
+			//TODO: Need to review this idea before i get rid of below code.
+//			ConnectionGene[] temp = connectionGenes1;
+//			connectionGenes1 = connectionGenes2;
+//			connectionGenes2 = temp;
+//
+//			Genome tempGenome = genome1;
+//			genome1 = genome2;
+//			genome2 = tempGenome;
+			//Just call this method again with reverse order
+			return constructGenomeByCrossingOver(genome2, genome1);
 		}
 
 		// post this line, connectiongene1 is having smaller max innovation when
@@ -163,7 +159,27 @@ public class CrossOverService {
 				}
 			}
 		}
-		return poolService.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
+		Genome toReturn = poolService.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
+		
+		//Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS logic
+		toReturn.getConnectionGenesSorted().forEach(c -> {
+			try {
+				if (!genome1.getConnectionGenesSorted().stream()
+						.filter(g1c -> g1c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber()).findFirst()
+						.get().isEnabled()
+						&& !genome2.getConnectionGenesSorted().stream()
+								.filter(g2c -> g2c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber())
+								.findFirst().get().isEnabled()) {
+					if (c.isLucky(CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS))
+						c.setEnabled(false);
+					else
+						c.setEnabled(true);
+				}				
+			}catch(NoSuchElementException e) {
+				//do nothing since the connection is not there in both the parents
+			}
+		});
+		return toReturn;
 	}
 
 }
