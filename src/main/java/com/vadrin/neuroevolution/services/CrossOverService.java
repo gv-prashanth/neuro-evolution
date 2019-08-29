@@ -23,8 +23,6 @@ public class CrossOverService {
 	private static final double PERCENTAGE_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
 	//TODO: im not doing interspecies crossover in the right way
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
-	// TODO: Need to get rid of below custom configuration
-	private static final double X_POPULATION_CUTOFF_SPECIES_FOR_NEXT_GENERATION = 0.25d;
 
 	@Autowired
 	private SpeciationService speciationService;
@@ -35,9 +33,9 @@ public class CrossOverService {
 	public void crossOver() {
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
-			int numberOfOriginalSpeciesPopToReach = speciationService.getPreSelectSpeciesPoolSize(thisSpeciesId);
+			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(thisSpeciesId);
 			int i = speciationService.getNumberOfGenomesInSpecies(thisSpeciesId);
-			while (i < numberOfOriginalSpeciesPopToReach * X_POPULATION_CUTOFF_SPECIES_FOR_NEXT_GENERATION) {
+			while (i < speciesPopToReach) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
@@ -74,6 +72,11 @@ public class CrossOverService {
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
 
+	}
+
+	private int calculateSpeciesPopToReachForThisSpecies(Integer thisSpeciesId) {
+		return (int) ((((double) poolService.getPOOLCAPACITY()) / poolService.getGenomes().size())
+				* speciationService.getNumberOfGenomesInSpecies(thisSpeciesId));
 	}
 
 	private Genome constructGenomeByCrossingOver(final Genome genome1, final Genome genome2) {

@@ -30,7 +30,6 @@ public class SpeciationService {
 	
 	private int referenceSpeciesCounter = 0;
 	private Map<Integer, String> speciesIdToReferenceGenome = new HashMap<Integer, String>();
-	private Map<Integer, Integer> speciesPoolSize = new HashMap<Integer, Integer>();
 
 	public void speciate() {
 		resetSpecies();
@@ -52,18 +51,10 @@ public class SpeciationService {
 			if (notDone)
 				markThisGenomeAsNewSpecies(genome);
 		}
-		loadSpeciesPoolSize();
-		System.out.println("Number of species in this generation: " + speciesPoolSize);
-	}
-
-	private void loadSpeciesPoolSize() {
-		speciesIdToReferenceGenome.keySet()
-				.forEach(speciesId -> speciesPoolSize.put(speciesId, getNumberOfGenomesInSpecies(speciesId)));
 	}
 
 	private void resetSpecies() {
 		speciesIdToReferenceGenome = new HashMap<Integer, String>();
-		speciesPoolSize = new HashMap<Integer, Integer>();
 		referenceSpeciesCounter = 0;
 	}
 
@@ -158,10 +149,6 @@ public class SpeciationService {
 		return speciesIdToReferenceGenome.keySet();
 	}
 
-	public int getPreSelectSpeciesPoolSize(int speciesId) {
-		return speciesPoolSize.get(speciesId);
-	}
-
 	public Genome getRandomGenomeOfThisSpecies(Integer thisSpeciesId) {
 		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
 		return poolService.getGenomes().stream().filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId)
@@ -180,7 +167,6 @@ public class SpeciationService {
 				.forEach(g -> genomesToKill.add(g));
 		genomesToKill.forEach(g -> poolService.killGenome(g.getId()));
 		speciesIdToReferenceGenome.remove(thisSpeciesId);
-		loadSpeciesPoolSize();
 	}
 
 }
