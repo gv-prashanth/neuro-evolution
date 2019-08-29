@@ -21,13 +21,13 @@ public class SpeciationService {
 	private static final double C2 = 1.0d;
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
-	
+
 	@Autowired
 	private PoolService poolService;
 
 	@Autowired
 	private MathService mathService;
-	
+
 	private int referenceSpeciesCounter = 0;
 	private Map<Integer, String> speciesIdToReferenceGenome = new HashMap<Integer, String>();
 
@@ -160,7 +160,7 @@ public class SpeciationService {
 				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
 	}
 
-	//TODO: Need to use or get rid of the below method
+	// TODO: Need to use or get rid of the below method
 	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(Integer thisSpeciesId) {
 		Set<Genome> genomesToKill = new HashSet<Genome>();
 		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)

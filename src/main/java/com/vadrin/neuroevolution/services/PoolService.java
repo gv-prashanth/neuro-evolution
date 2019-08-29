@@ -24,14 +24,15 @@ public class PoolService {
 	private MathService mathService;
 
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
-	//TODO: need to rename the below variable to a meaningful way
+	// TODO: need to rename the below variable to a meaningful way
 	private int referenceNodeCounter = 0;
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
-	//TODO: Need to get rid of this below variable
+	// TODO: Need to get rid of this below variable
 	private int POOLCAPACITY;
-	
+	private int GENERATION;
+
 	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
 		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();
@@ -108,6 +109,11 @@ public class PoolService {
 			constructCopyGenome(firstRandomGenome);
 		}
 		this.POOLCAPACITY = poolSize;
+		increaseGenerationCounter();
+	}
+
+	public void increaseGenerationCounter() {
+		GENERATION++;
 	}
 
 	private Genome constructRandomGenome(int inputNodesSize, int outputNodesSize) {
@@ -185,10 +191,9 @@ public class PoolService {
 		return toReturn;
 	}
 
-	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene,
-			NodeGene toNodeGene) {
-		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene,
-				mathService.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
+	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene) {
+		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene, mathService.randomNumber(
+				MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
@@ -209,12 +214,17 @@ public class PoolService {
 
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
-		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber,
-				mathService.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND), fromNodeGene, toNodeGene);
+		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber, mathService
+				.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND),
+				fromNodeGene, toNodeGene);
 	}
 
 	public int getPOOLCAPACITY() {
 		return POOLCAPACITY;
+	}
+
+	public int getGENERATION() {
+		return GENERATION;
 	}
 
 }

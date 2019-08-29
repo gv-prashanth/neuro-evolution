@@ -21,7 +21,7 @@ public class CrossOverService {
 	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double PERCENTAGE_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
-	//TODO: im not doing interspecies crossover in the right way
+	// TODO: im not doing interspecies crossover in the right way
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
 	@Autowired
@@ -31,6 +31,7 @@ public class CrossOverService {
 	private PoolService poolService;
 
 	public void crossOver() {
+		System.out.println("pop before crossover" + poolService.getGenomes().size());
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(thisSpeciesId);
@@ -46,7 +47,7 @@ public class CrossOverService {
 				i++;
 			}
 		});
-
+		System.out.println("pop after intra crossover" + poolService.getGenomes().size());
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
 
@@ -71,6 +72,7 @@ public class CrossOverService {
 			Genome newGenome = constructGenomeByCrossingOver(f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
+		System.out.println("pop after inter crossover" + poolService.getGenomes().size());
 
 	}
 
@@ -95,7 +97,7 @@ public class CrossOverService {
 		if (connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()) {
-			//TODO: Need to review this idea before i get rid of below code.
+			// TODO: Need to review this idea before i get rid of below code.
 //			ConnectionGene[] temp = connectionGenes1;
 //			connectionGenes1 = connectionGenes2;
 //			connectionGenes2 = temp;
@@ -103,7 +105,7 @@ public class CrossOverService {
 //			Genome tempGenome = genome1;
 //			genome1 = genome2;
 //			genome2 = tempGenome;
-			//Just call this method again with reverse order
+			// Just call this method again with reverse order
 			return constructGenomeByCrossingOver(genome2, genome1);
 		}
 
@@ -163,13 +165,14 @@ public class CrossOverService {
 			}
 		}
 		Genome toReturn = poolService.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
-		
-		//Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS logic
+
+		// Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS
+		// logic
 		toReturn.getConnectionGenesSorted().forEach(c -> {
 			try {
 				if (!genome1.getConnectionGenesSorted().stream()
-						.filter(g1c -> g1c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber()).findFirst()
-						.get().isEnabled()
+						.filter(g1c -> g1c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber())
+						.findFirst().get().isEnabled()
 						&& !genome2.getConnectionGenesSorted().stream()
 								.filter(g2c -> g2c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber())
 								.findFirst().get().isEnabled()) {
@@ -177,9 +180,9 @@ public class CrossOverService {
 						c.setEnabled(false);
 					else
 						c.setEnabled(true);
-				}				
-			}catch(NoSuchElementException e) {
-				//do nothing since the connection is not there in both the parents
+				}
+			} catch (NoSuchElementException e) {
+				// do nothing since the connection is not there in both the parents
 			}
 		});
 		return toReturn;

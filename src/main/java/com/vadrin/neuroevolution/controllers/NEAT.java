@@ -48,14 +48,20 @@ public class NEAT {
 	}
 
 	public void stepOneGeneration() {
-		// Find the speciesId for each species
+		// Load the speciesId for each species
 		speciationService.speciate();
-		// Top 50% of genomes in each species are selected.
+		// Top x% of genomes in each species are selected.
 		selectionService.select();
 		// within the species select two random parents are re populate the pool
 		crossOverService.crossOver();
-		// mutate the ONLY NEW ONES OR ALL???
+		// mutate all except some best
 		mutationService.mutate();
+		// increase generation counter
+		poolService.increaseGenerationCounter();
+	}
+
+	public int getGeneration() {
+		return poolService.getGENERATION();
 	}
 
 }
