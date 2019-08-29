@@ -31,7 +31,7 @@ public class CrossOverService {
 	private PoolService poolService;
 
 	public void crossOver() {
-		System.out.println("pop before crossover" + poolService.getGenomes().size());
+		System.out.println("pop before crossover " + poolService.getGenomes().size());
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(thisSpeciesId);
@@ -47,7 +47,7 @@ public class CrossOverService {
 				i++;
 			}
 		});
-		System.out.println("pop after intra crossover" + poolService.getGenomes().size());
+		System.out.println("pop after intra crossover " + poolService.getGenomes().size());
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
 
@@ -72,7 +72,7 @@ public class CrossOverService {
 			Genome newGenome = constructGenomeByCrossingOver(f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
-		System.out.println("pop after inter crossover" + poolService.getGenomes().size());
+		System.out.println("pop after inter crossover " + poolService.getGenomes().size());
 
 	}
 

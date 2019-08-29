@@ -46,7 +46,7 @@ public class SelectionService {
 	public Set<String> championsWhoShouldntBeHarmed() {
 		Set<String> toReturn = new HashSet<String>();
 
-		// Pick top overall in the pool
+		// Pick top one in the overall pool
 		poolService.getGenomes().stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.limit(1).forEach(g -> toReturn.add(g.getId()));
 
