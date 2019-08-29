@@ -24,7 +24,7 @@ public class CrossOverService {
 //		toAdd.setEnabled(true);
 //	}
 
-//TODO: im not doing interspecies crossover
+//TODO: im not doing interspecies crossover in the right way
 
 	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
