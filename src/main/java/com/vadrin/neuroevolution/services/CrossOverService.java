@@ -59,7 +59,7 @@ public class CrossOverService {
 			Genome parent2;
 			try {
 				parent2 = poolService.getGenomes().stream()
-						.filter(p2 -> p2.getReferenceSpeciesNumber() != parent1.getReferenceSpeciesNumber()).findAny()
+						.filter(p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber())).findAny()
 						.get();
 			} catch (NoSuchElementException e) {
 				// Means the whole pool is of same species. So we cant interspecies crossover.
@@ -76,7 +76,7 @@ public class CrossOverService {
 
 	}
 
-	private int calculateSpeciesPopToReachForThisSpecies(Integer thisSpeciesId) {
+	private int calculateSpeciesPopToReachForThisSpecies(String thisSpeciesId) {
 		return (int) ((((double) poolService.getPOOLCAPACITY()) / poolService.getGenomes().size())
 				* speciationService.getNumberOfGenomesInSpecies(thisSpeciesId));
 	}
@@ -97,14 +97,6 @@ public class CrossOverService {
 		if (connectionGenes1[connectionGenes1.length - 1]
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()) {
-			// TODO: Need to review this idea before i get rid of below code.
-//			ConnectionGene[] temp = connectionGenes1;
-//			connectionGenes1 = connectionGenes2;
-//			connectionGenes2 = temp;
-//
-//			Genome tempGenome = genome1;
-//			genome1 = genome2;
-//			genome2 = tempGenome;
 			// Just call this method again with reverse order
 			return constructGenomeByCrossingOver(genome2, genome1);
 		}

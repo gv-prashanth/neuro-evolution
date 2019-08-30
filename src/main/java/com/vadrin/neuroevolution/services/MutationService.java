@@ -40,7 +40,6 @@ public class MutationService {
 	@Autowired
 	private SelectionService selectionService;
 
-	//TODO: Need to get rid of this below variable.
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	private void prepare() {
@@ -48,13 +47,13 @@ public class MutationService {
 	}
 
 	public void mutate() {
-		// everyone should not get mutated.. the best ones should be left as is..else
-		// your best fitness will go down if you keep mutating
-		// your best guy
 		prepare();
 		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
+			// everyone should not get mutated.. the best ones should be left as is..else
+			// your best fitness will go down if you keep mutating
+			// your best guy
 			if (!selectionService.championsWhoShouldntBeHarmed().stream()
 					.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 				Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()

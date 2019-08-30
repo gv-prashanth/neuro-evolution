@@ -1,6 +1,8 @@
 package com.vadrin.neuroevolution.models;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,16 +12,34 @@ public class Genome {
 	private Set<NodeGene> nodeGenes;
 	private Set<ConnectionGene> connectionGenes;
 	private double fitnessScore;
-	private int referenceSpeciesNumber;
+	private String referenceSpeciesNumber;
 	private String id;
+	private int birthGeneration;
+	private Map<Integer, Double> fitnessLog;
 
-	public Genome(Set<NodeGene> nodeGenes, Set<ConnectionGene> connectionGenes) {
+	public Genome(Set<NodeGene> nodeGenes, Set<ConnectionGene> connectionGenes, int birthGeneration) {
 		super();
 		this.nodeGenes = nodeGenes;
 		this.connectionGenes = connectionGenes;
 		this.fitnessScore = 0;
-		this.referenceSpeciesNumber = 0;
+		this.referenceSpeciesNumber = null;
 		this.id = UUID.randomUUID().toString();
+		this.birthGeneration = birthGeneration;
+		this.fitnessLog = new HashMap<Integer, Double>();
+	}
+	
+	public void addFitnessLog(int generation) {
+		fitnessLog.put(Integer.valueOf(generation), Double.valueOf(getFitnessScore()));
+	}
+
+	public Map<Integer, Double> getFitnessLog() {
+		return fitnessLog;
+	}
+
+
+
+	public int getBirthGeneration() {
+		return birthGeneration;
 	}
 
 	public double getFitnessScore() {
@@ -30,11 +50,11 @@ public class Genome {
 		this.fitnessScore = fitnessScore;
 	}
 
-	public int getReferenceSpeciesNumber() {
+	public String getReferenceSpeciesNumber() {
 		return referenceSpeciesNumber;
 	}
 
-	public void setReferenceSpeciesNumber(int referenceSpeciesNumber) {
+	public void setReferenceSpeciesNumber(String referenceSpeciesNumber) {
 		this.referenceSpeciesNumber = referenceSpeciesNumber;
 	}
 

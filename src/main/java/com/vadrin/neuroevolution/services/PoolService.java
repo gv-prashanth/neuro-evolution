@@ -73,7 +73,7 @@ public class PoolService {
 			actualConnectionGenes.add(constructConnectionGeneWithExistingInnovationNumber(
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
-		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes);
+		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes, GENERATION);
 		genomesPool.put(toReturn.getId(), toReturn);
 		return toReturn;
 	}
@@ -112,6 +112,7 @@ public class PoolService {
 	}
 
 	public void increaseGenerationCounter() {
+		getGenomes().forEach(g -> g.addFitnessLog(GENERATION));
 		GENERATION++;
 	}
 
@@ -137,7 +138,7 @@ public class PoolService {
 			;
 		}
 		inputNodeGenes.addAll(outputNodeGenes);
-		Genome genome = new Genome(inputNodeGenes, connectionGenes);
+		Genome genome = new Genome(inputNodeGenes, connectionGenes, GENERATION);
 		genomesPool.put(genome.getId(), genome);
 		return genome;
 	}

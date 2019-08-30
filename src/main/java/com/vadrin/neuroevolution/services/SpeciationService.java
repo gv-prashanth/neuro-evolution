@@ -1,12 +1,12 @@
 package com.vadrin.neuroevolution.services;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,11 +28,7 @@ public class SpeciationService {
 	@Autowired
 	private MathService mathService;
 
-	private int referenceSpeciesCounter = 0;
-	private Map<Integer, String> speciesIdToReferenceGenome = new HashMap<Integer, String>();
-
 	public void speciate() {
-		resetSpecies();
 		Iterator<Genome> iterator = poolService.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
@@ -41,9 +37,11 @@ public class SpeciationService {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			boolean notDone = true;
-			for (int i = 1; i <= referenceSpeciesCounter; i++) {
-				if (isSameSpecies(genome.getId(), i)) {
-					genome.setReferenceSpeciesNumber(i);
+			Iterator<String> speciesIterator = getSpeciesIds().iterator();
+			while (speciesIterator.hasNext()) {
+				String thisSpeciesId = speciesIterator.next();
+				if (isSameSpecies(genome.getId(), thisSpeciesId)) {
+					genome.setReferenceSpeciesNumber(thisSpeciesId);
 					notDone = false;
 					break;
 				}
@@ -51,21 +49,15 @@ public class SpeciationService {
 			if (notDone)
 				markThisGenomeAsNewSpecies(genome);
 		}
-	}
-
-	private void resetSpecies() {
-		speciesIdToReferenceGenome = new HashMap<Integer, String>();
-		referenceSpeciesCounter = 0;
+		getSpeciesIds().forEach(sId -> System.out.print(getAllGenomesOfThisSpecies(sId).size()+","));
+		System.out.println();
 	}
 
 	private void markThisGenomeAsNewSpecies(Genome genome) {
-		referenceSpeciesCounter++;
-		genome.setReferenceSpeciesNumber(referenceSpeciesCounter);
-		String singleGenomeId = genome.getId();
-		speciesIdToReferenceGenome.put(genome.getReferenceSpeciesNumber(), singleGenomeId);
+		genome.setReferenceSpeciesNumber(UUID.randomUUID().toString());
 	}
 
-	private boolean isSameSpecies(String genomeId, int speciesId) {
+	private boolean isSameSpecies(String genomeId, String speciesId) {
 		List<ConnectionGene> connectionList1 = poolService.getGenome(genomeId).getConnectionGenesSorted();
 		List<ConnectionGene> connectionList2 = poolService.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
 				.getConnectionGenesSorted();
@@ -141,32 +133,48 @@ public class SpeciationService {
 		return deltaScore < DELTAT;
 	}
 
-	private String getReferenceGenomeOfSpeciesId(int speciesId) {
-		return this.speciesIdToReferenceGenome.get(speciesId);
+	private String getReferenceGenomeOfSpeciesId(String speciesId) {
+		return poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
+				.findAny().get().getId();
 	}
 
-	public Set<Integer> getSpeciesIds() {
-		return speciesIdToReferenceGenome.keySet();
+	public Set<String> getSpeciesIds() {
+		Set<String> toReturn = new HashSet<String>();
+		poolService.getGenomes().forEach(g -> {
+			if (g.getReferenceSpeciesNumber() != null)
+				toReturn.add(g.getReferenceSpeciesNumber());
+		});
+		return toReturn;
 	}
 
-	public Genome getRandomGenomeOfThisSpecies(Integer thisSpeciesId) {
+	public Genome getRandomGenomeOfThisSpecies(String thisSpeciesId) {
 		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return poolService.getGenomes().stream().filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId)
-				.skip(randomPos).findFirst().get();
+		return poolService.getGenomes().stream()
+				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).skip(randomPos)
+				.findFirst().get();
 	}
 
-	public int getNumberOfGenomesInSpecies(Integer thisSpeciesId) {
+	public int getNumberOfGenomesInSpecies(String thisSpeciesId) {
 		return (int) poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber() == thisSpeciesId).count();
+				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).count();
 	}
 
-	// TODO: Need to use or get rid of the below method
-	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(Integer thisSpeciesId) {
+	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(String thisSpeciesId) {
 		Set<Genome> genomesToKill = new HashSet<Genome>();
-		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber() == thisSpeciesId)
+		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 				.forEach(g -> genomesToKill.add(g));
 		genomesToKill.forEach(g -> poolService.killGenome(g.getId()));
-		speciesIdToReferenceGenome.remove(thisSpeciesId);
+	}
+
+	public Genome getMaxFitGenomeOfThisSpecies(String thisSpeciesId) {
+		return poolService.getGenomes().stream()
+				.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
+	}
+
+	public Set<Genome> getAllGenomesOfThisSpecies(String speciesId) {
+		return poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
+				.collect(Collectors.toSet());
 	}
 
 }
