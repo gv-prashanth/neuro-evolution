@@ -36,6 +36,7 @@ public class NEAT {
 	MutationService mutationService;
 
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
+		poolService.startNewGeneration();
 		poolService.constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
 	}
 
@@ -48,6 +49,8 @@ public class NEAT {
 	}
 
 	public void stepOneGeneration() {
+		// increase generation counter
+		poolService.startNewGeneration();
 		// Load the speciesId for each species
 		speciationService.speciate();
 		// Top x% of genomes in each species are selected.
@@ -56,8 +59,6 @@ public class NEAT {
 		crossOverService.crossOver();
 		// mutate all except some best
 		mutationService.mutate();
-		// increase generation counter
-		poolService.increaseGenerationCounter();
 	}
 
 	public int getGeneration() {

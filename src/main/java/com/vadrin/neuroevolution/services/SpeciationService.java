@@ -49,6 +49,7 @@ public class SpeciationService {
 			if (notDone)
 				markThisGenomeAsNewSpecies(genome);
 		}
+		System.out.print("Species Pop breakdown: ");
 		getSpeciesIds().forEach(sId -> System.out.print(getAllGenomesOfThisSpecies(sId).size()+","));
 		System.out.println();
 	}
@@ -99,10 +100,10 @@ public class SpeciationService {
 								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())
 				+ 1];
 		Arrays.asList(connectionGenes1).stream()
-				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
+				.forEachOrdered(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
 		Arrays.asList(connectionGenes2).stream()
-				.forEach(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
+				.forEachOrdered(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene2Entry);
 
 		double E = 0;
@@ -135,7 +136,7 @@ public class SpeciationService {
 
 	private String getReferenceGenomeOfSpeciesId(String speciesId) {
 		return poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
-				.findAny().get().getId();
+				.findFirst().get().getId();
 	}
 
 	public Set<String> getSpeciesIds() {

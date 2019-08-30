@@ -28,7 +28,7 @@ public class PoolService {
 	private Map<String, NodeGene> nodeGenesPool = new HashMap<String, NodeGene>();
 	private int referenceInnovationCounter = 0;
 	private Set<ConnectionGene> connectionGenesPool = new HashSet<ConnectionGene>();
-	// TODO: Need to get rid of this below variable
+	// TODO: Need to get rid of this below variable. Should get from NEAT class right?
 	private int POOLCAPACITY;
 	private int GENERATION;
 
@@ -66,10 +66,10 @@ public class PoolService {
 		sampleConnectionGenes.forEach(sampleConn -> {
 			NodeGene fromNodeGene = actualNodeGenes.stream()
 					.filter(n -> n.getReferenceNodeNumber() == sampleConn.getFromNode().getReferenceNodeNumber())
-					.findAny().get();
+					.findFirst().get();
 			NodeGene toNodeGene = actualNodeGenes.stream()
 					.filter(n -> n.getReferenceNodeNumber() == sampleConn.getToNode().getReferenceNodeNumber())
-					.findAny().get();
+					.findFirst().get();
 			actualConnectionGenes.add(constructConnectionGeneWithExistingInnovationNumber(
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
@@ -108,10 +108,9 @@ public class PoolService {
 			constructCopyGenome(firstRandomGenome);
 		}
 		this.POOLCAPACITY = poolSize;
-		increaseGenerationCounter();
 	}
 
-	public void increaseGenerationCounter() {
+	public void startNewGeneration() {
 		getGenomes().forEach(g -> g.addFitnessLog(GENERATION));
 		GENERATION++;
 	}

@@ -20,7 +20,6 @@ public class CrossOverService {
 
 	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
-	private static final double PERCENTAGE_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
 	// TODO: im not doing interspecies crossover in the right way
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
@@ -31,7 +30,7 @@ public class CrossOverService {
 	private PoolService poolService;
 
 	public void crossOver() {
-		System.out.println("pop before crossover " + poolService.getGenomes().size());
+		//System.out.println("pop before crossover " + poolService.getGenomes().size());
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(thisSpeciesId);
@@ -47,7 +46,7 @@ public class CrossOverService {
 				i++;
 			}
 		});
-		System.out.println("pop after intra crossover " + poolService.getGenomes().size());
+		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
 
@@ -58,9 +57,9 @@ public class CrossOverService {
 			Genome parent1 = fitnessSortedGenomes.next();
 			Genome parent2;
 			try {
-				parent2 = poolService.getGenomes().stream()
-						.filter(p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber())).findAny()
-						.get();
+				parent2 = poolService.getGenomes().stream().filter(
+						p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber()))
+						.findAny().get();
 			} catch (NoSuchElementException e) {
 				// Means the whole pool is of same species. So we cant interspecies crossover.
 				parent2 = poolService.getGenomes().stream().findAny().get();
@@ -72,7 +71,7 @@ public class CrossOverService {
 			Genome newGenome = constructGenomeByCrossingOver(f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
-		System.out.println("pop after inter crossover " + poolService.getGenomes().size());
+		//System.out.println("pop after inter crossover " + poolService.getGenomes().size());
 
 	}
 
@@ -120,10 +119,10 @@ public class CrossOverService {
 								: connectionGenes2[connectionGenes2.length - 1].getReferenceInnovationNumber())
 				+ 1];
 		Arrays.asList(connectionGenes1).stream()
-				.forEach(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
+				.forEachOrdered(thisConnectionGene1Entry -> ConnectionGeneMostlyEmpty1[thisConnectionGene1Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene1Entry);
 		Arrays.asList(connectionGenes2).stream()
-				.forEach(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
+				.forEachOrdered(thisConnectionGene2Entry -> ConnectionGeneMostlyEmpty2[thisConnectionGene2Entry
 						.getReferenceInnovationNumber()] = thisConnectionGene2Entry);
 
 		// We shall start by comparing column by column for each connectiongene as in
