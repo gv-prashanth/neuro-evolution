@@ -14,7 +14,7 @@ public class MathService {
 	}
 
 	public double applySigmiodActivationFunction(double input) {
-		return 1d / (1d + Math.exp(-input));
+		return 1d / (1d + Math.exp(-4.9d*input));
 	}
 
 }

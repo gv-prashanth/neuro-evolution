@@ -20,7 +20,6 @@ public class CrossOverService {
 
 	private static final double CHANCE_FOR_GENE_TO_BE_PICKEDUP_FROM_EITHER_OF_PARENT = 0.5d; // half
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
-	// TODO: im not doing interspecies crossover in the right way
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
 	@Autowired
@@ -29,8 +28,37 @@ public class CrossOverService {
 	@Autowired
 	private PoolService poolService;
 
+	@Autowired
+	private MathService mathService;
+
 	public void crossOver() {
-		//System.out.println("pop before crossover " + poolService.getGenomes().size());
+		System.out.println("pop before crossover " + poolService.getGenomes().size());
+
+		// Inter species mating
+		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
+		Iterator<Genome> allGenomesInPool = poolService.getGenomes().iterator();
+		while (allGenomesInPool.hasNext()) {
+			Genome parent1 = allGenomesInPool.next();
+			if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_INTER_SPECIES_MATING) {
+				// This parent is lucky. Lets interspecies cross over it
+				Genome parent2;
+				try {
+					parent2 = poolService.getGenomes().stream().filter(
+							p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber()))
+							.findAny().get();
+				} catch (NoSuchElementException e) {
+					// Means the whole pool is of same species. So we cant interspecies crossover.
+					parent2 = poolService.getGenomes().stream().findAny().get();
+				}
+				fatherMotherPairs.put(parent1, parent2);
+			}
+		}
+		fatherMotherPairs.forEach((f, m) -> {
+			Genome newGenome = constructGenomeByCrossingOver(f, m);
+			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
+		});
+		System.out.println("pop after inter crossover " + poolService.getGenomes().size());
+
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
 			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(thisSpeciesId);
@@ -46,35 +74,24 @@ public class CrossOverService {
 				i++;
 			}
 		});
-		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
-		// Inter species mating
-		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
-
-		int soFarPool = poolService.getGenomes().size();
-		Iterator<Genome> fitnessSortedGenomes = poolService.getGenomes().stream()
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).iterator();
-		while (fitnessSortedGenomes.hasNext() && soFarPool < poolService.getPOOLCAPACITY()) {
-			Genome parent1 = fitnessSortedGenomes.next();
-			Genome parent2;
-			try {
-				parent2 = poolService.getGenomes().stream().filter(
-						p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber()))
-						.findAny().get();
-			} catch (NoSuchElementException e) {
-				// Means the whole pool is of same species. So we cant interspecies crossover.
-				parent2 = poolService.getGenomes().stream().findAny().get();
-			}
-			fatherMotherPairs.put(parent1, parent2);
-			soFarPool++;
+		System.out.println("pop after intra crossover " + poolService.getGenomes().size());
+		int times=0;
+		while (poolService.getGenomes().size() < poolService.getPOOLCAPACITY()) {
+			int randomPos = (int) mathService.randomNumber(0, speciationService.getSpeciesIds().size() - 1);
+			String randomSpeciesId = speciationService.getSpeciesIds().stream().skip(randomPos).findAny().get();
+			// pick any two random genomes in this species
+			// and then cross over between them
+			// and then put them back in the pool with same speciesid
+			Genome parent1 = speciationService.getRandomGenomeOfThisSpecies(randomSpeciesId);
+			Genome parent2 = speciationService.getRandomGenomeOfThisSpecies(randomSpeciesId);
+			Genome newGenome = constructGenomeByCrossingOver(parent1, parent2);
+			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
+			times++;
 		}
-		fatherMotherPairs.forEach((f, m) -> {
-			Genome newGenome = constructGenomeByCrossingOver(f, m);
-			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
-		});
-		//System.out.println("pop after inter crossover " + poolService.getGenomes().size());
-
+		System.out.println("BIG PROBLEM AVERTED "+times+" times");
 	}
 
+	//TODO: Need to visit this
 	private int calculateSpeciesPopToReachForThisSpecies(String thisSpeciesId) {
 		return (int) ((((double) poolService.getPOOLCAPACITY()) / poolService.getGenomes().size())
 				* speciationService.getNumberOfGenomesInSpecies(thisSpeciesId));

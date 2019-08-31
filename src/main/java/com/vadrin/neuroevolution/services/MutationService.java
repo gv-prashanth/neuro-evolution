@@ -22,8 +22,7 @@ public class MutationService {
 
 	private static final double CHANCE_FOR_WEIGHT_MUTATION = 0.8d; // 0.8 MEANS 80%
 	private static final double IF_WEIGHT_MUTATION_THEN_CHANCE_FOR_RANDOM_WEIGHT = 0.1d; // 0.1 MEANS 10%
-	//TODO: Somehow value 0.03 isnt working good for me. Im fine with 0.003 however
-	private static final double CHANCE_FOR_ADDING_NEW_NODE = 0.003d;
+	private static final double CHANCE_FOR_ADDING_NEW_NODE = 0.03d;
 	private static final double CHANCE_FOR_ADDING_NEW_CONNECTION = 0.05d;
 	// TODO: looks like below is necessary although not mentioned in paper. just
 	// have to figure right value

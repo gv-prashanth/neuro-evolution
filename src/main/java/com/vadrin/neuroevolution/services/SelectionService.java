@@ -68,9 +68,7 @@ public class SelectionService {
 	}
 
 	private double fractionOfChampionsToSelectInThisSpecies(String thisSpeciesId) {
-		return ((double) speciationService.getNumberOfGenomesInSpecies(thisSpeciesId))
-				/ poolService.getGenomes().size();
-//		return FRACTION_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE;
+		return FRACTION_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE;
 	}
 
 	public Set<String> championsWhoShouldntBeHarmed() {
