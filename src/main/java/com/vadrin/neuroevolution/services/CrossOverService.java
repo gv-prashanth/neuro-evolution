@@ -32,7 +32,7 @@ public class CrossOverService {
 	private MathService mathService;
 
 	public void crossOver() {
-		System.out.println("pop before crossover " + poolService.getGenomes().size());
+		//System.out.println("pop before crossover " + poolService.getGenomes().size());
 
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
@@ -57,7 +57,7 @@ public class CrossOverService {
 			Genome newGenome = constructGenomeByCrossingOver(f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
-		System.out.println("pop after inter crossover " + poolService.getGenomes().size());
+		//System.out.println("pop after inter crossover " + poolService.getGenomes().size());
 
 		// Intra species mating
 		speciationService.getSpeciesIds().forEach(thisSpeciesId -> {
@@ -74,7 +74,7 @@ public class CrossOverService {
 				i++;
 			}
 		});
-		System.out.println("pop after intra crossover " + poolService.getGenomes().size());
+		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
 		int times=0;
 		while (poolService.getGenomes().size() < poolService.getPOOLCAPACITY()) {
 			int randomPos = (int) mathService.randomNumber(0, speciationService.getSpeciesIds().size() - 1);
@@ -88,7 +88,7 @@ public class CrossOverService {
 			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
 			times++;
 		}
-		System.out.println("BIG PROBLEM AVERTED "+times+" times");
+		//System.out.println("BIG PROBLEM AVERTED "+times+" times");
 	}
 
 	//TODO: Need to visit this
