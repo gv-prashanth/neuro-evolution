@@ -75,7 +75,6 @@ public class CrossOverService {
 			}
 		});
 		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
-		int times=0;
 		while (poolService.getGenomes().size() < poolService.getPOOLCAPACITY()) {
 			int randomPos = (int) mathService.randomNumber(0, speciationService.getSpeciesIds().size() - 1);
 			String randomSpeciesId = speciationService.getSpeciesIds().stream().skip(randomPos).findAny().get();
@@ -86,7 +85,6 @@ public class CrossOverService {
 			Genome parent2 = speciationService.getRandomGenomeOfThisSpecies(randomSpeciesId);
 			Genome newGenome = constructGenomeByCrossingOver(parent1, parent2);
 			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
-			times++;
 		}
 		//System.out.println("BIG PROBLEM AVERTED "+times+" times");
 	}

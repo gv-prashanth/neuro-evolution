@@ -18,22 +18,22 @@ import com.vadrin.neuroevolution.services.SpeciationService;
 public class NEAT {
 
 	@Autowired
-	PoolService poolService;
+	private PoolService poolService;
 
 	@Autowired
-	FeedForwardService feedForwardService;
+	private FeedForwardService feedForwardService;
 
 	@Autowired
-	SpeciationService speciationService;
+	private SpeciationService speciationService;
 
 	@Autowired
-	SelectionService selectionService;
+	private SelectionService selectionService;
 
 	@Autowired
-	CrossOverService crossOverService;
+	private CrossOverService crossOverService;
 
 	@Autowired
-	MutationService mutationService;
+	private MutationService mutationService;
 
 	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
 		poolService.startNewGeneration();
