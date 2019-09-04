@@ -87,6 +87,7 @@ public class CrossOverService {
 	}
 
 	private Genome constructGenomeByCrossingOver(Pool pool, final Genome genome1, final Genome genome2) {
+		//TODO: Need to remove this code
 		if (pool.getGenomes().size() >= pool.getPoolCapacity()) {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;

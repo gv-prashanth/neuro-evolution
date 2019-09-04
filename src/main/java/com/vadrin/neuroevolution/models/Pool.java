@@ -1,8 +1,10 @@
 package com.vadrin.neuroevolution.models;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,6 +25,9 @@ public class Pool {
 	private static final int GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES = 15;
 	private static final int NUMBER_OF_CHAMPIONS_TO_BE_LEFT_UNHARMED_IN_EACH_SPECIES = 1;
 	private static final int MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED = 5;
+
+	// TODO: Can we come up with a better way to solve this problem
+	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
@@ -313,5 +318,17 @@ public class Pool {
 
 	public Genome getGenome(String gid) {
 		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
+	}
+
+	public Map<ConnectionGene, NodeGene> getLuckyConnectionGenesInThisGeneration() {
+		return luckyConnectionGenesInThisGeneration;
+	}
+
+	public void clearLuckyConnectionGenesInThisGeneration() {
+		luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
+	}
+
+	public void addLuckyConnectionGenesInThisGeneration(ConnectionGene connectionGene, NodeGene newNodeGene) {
+		luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 	}
 }
