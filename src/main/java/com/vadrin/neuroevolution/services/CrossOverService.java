@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.Pool;
 
 @Service
 public class CrossOverService {
@@ -21,72 +22,72 @@ public class CrossOverService {
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
-	public void crossOver(PoolService poolService) {
-		//System.out.println("pop before crossover " + poolService.getGenomes().size());
+	public void crossOver(Pool pool) {
+		//System.out.println("pop before crossover " + pool.getGenomes().size());
 
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
-		Iterator<Genome> allGenomesInPool = poolService.getGenomes().iterator();
+		Iterator<Genome> allGenomesInPool = pool.getGenomes().iterator();
 		while (allGenomesInPool.hasNext()) {
 			Genome parent1 = allGenomesInPool.next();
 			if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_INTER_SPECIES_MATING) {
 				// This parent is lucky. Lets interspecies cross over it
 				Genome parent2;
 				try {
-					parent2 = poolService.getGenomes().stream().filter(
+					parent2 = pool.getGenomes().stream().filter(
 							p2 -> !p2.getReferenceSpeciesNumber().equalsIgnoreCase(parent1.getReferenceSpeciesNumber()))
 							.findAny().get();
 				} catch (NoSuchElementException e) {
 					// Means the whole pool is of same species. So we cant interspecies crossover.
-					parent2 = poolService.getGenomes().stream().findAny().get();
+					parent2 = pool.getGenomes().stream().findAny().get();
 				}
 				fatherMotherPairs.put(parent1, parent2);
 			}
 		}
 		fatherMotherPairs.forEach((f, m) -> {
-			Genome newGenome = constructGenomeByCrossingOver(poolService, f, m);
+			Genome newGenome = constructGenomeByCrossingOver(pool, f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
-		//System.out.println("pop after inter crossover " + poolService.getGenomes().size());
+		//System.out.println("pop after inter crossover " + pool.getGenomes().size());
 
 		// Intra species mating
-		poolService.getSpeciesIds().forEach(thisSpeciesId -> {
-			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(poolService, thisSpeciesId);
-			int i = poolService.getNumberOfGenomesInSpecies(thisSpeciesId);
+		pool.getSpeciesIds().forEach(thisSpeciesId -> {
+			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(pool, thisSpeciesId);
+			int i = pool.getNumberOfGenomesInSpecies(thisSpeciesId);
 			while (i < speciesPopToReach) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
-				Genome parent1 = poolService.getRandomGenomeOfThisSpecies(thisSpeciesId);
-				Genome parent2 = poolService.getRandomGenomeOfThisSpecies(thisSpeciesId);
-				Genome newGenome = constructGenomeByCrossingOver(poolService, parent1, parent2);
+				Genome parent1 = pool.getRandomGenomeOfThisSpecies(thisSpeciesId);
+				Genome parent2 = pool.getRandomGenomeOfThisSpecies(thisSpeciesId);
+				Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
 				i++;
 			}
 		});
-		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
-		while (poolService.getGenomes().size() < poolService.getPOOLCAPACITY()) {
-			int randomPos = (int) MathService.randomNumber(0, poolService.getSpeciesIds().size() - 1);
-			String randomSpeciesId = poolService.getSpeciesIds().stream().skip(randomPos).findAny().get();
+		//System.out.println("pop after intra crossover " + pool.getGenomes().size());
+		while (pool.getGenomes().size() < pool.getPOOLCAPACITY()) {
+			int randomPos = (int) MathService.randomNumber(0, pool.getSpeciesIds().size() - 1);
+			String randomSpeciesId = pool.getSpeciesIds().stream().skip(randomPos).findAny().get();
 			// pick any two random genomes in this species
 			// and then cross over between them
 			// and then put them back in the pool with same speciesid
-			Genome parent1 = poolService.getRandomGenomeOfThisSpecies(randomSpeciesId);
-			Genome parent2 = poolService.getRandomGenomeOfThisSpecies(randomSpeciesId);
-			Genome newGenome = constructGenomeByCrossingOver(poolService, parent1, parent2);
+			Genome parent1 = pool.getRandomGenomeOfThisSpecies(randomSpeciesId);
+			Genome parent2 = pool.getRandomGenomeOfThisSpecies(randomSpeciesId);
+			Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
 		}
 		//System.out.println("BIG PROBLEM AVERTED "+times+" times");
 	}
 
 	//TODO: Need to visit this
-	private int calculateSpeciesPopToReachForThisSpecies(PoolService poolService, String thisSpeciesId) {
-		return (int) ((((double) poolService.getPOOLCAPACITY()) / poolService.getGenomes().size())
-				* poolService.getNumberOfGenomesInSpecies(thisSpeciesId));
+	private int calculateSpeciesPopToReachForThisSpecies(Pool pool, String thisSpeciesId) {
+		return (int) ((((double) pool.getPOOLCAPACITY()) / pool.getGenomes().size())
+				* pool.getNumberOfGenomesInSpecies(thisSpeciesId));
 	}
 
-	private Genome constructGenomeByCrossingOver(PoolService poolService, final Genome genome1, final Genome genome2) {
-		if (poolService.getGenomes().size() >= poolService.getPOOLCAPACITY()) {
+	private Genome constructGenomeByCrossingOver(Pool pool, final Genome genome1, final Genome genome2) {
+		if (pool.getGenomes().size() >= pool.getPOOLCAPACITY()) {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;
 		}
@@ -102,7 +103,7 @@ public class CrossOverService {
 				.getReferenceInnovationNumber() > connectionGenes2[connectionGenes2.length - 1]
 						.getReferenceInnovationNumber()) {
 			// Just call this method again with reverse order
-			return constructGenomeByCrossingOver(poolService, genome2, genome1);
+			return constructGenomeByCrossingOver(pool, genome2, genome1);
 		}
 
 		// post this line, connectiongene1 is having smaller max innovation when
@@ -160,7 +161,7 @@ public class CrossOverService {
 				}
 			}
 		}
-		Genome toReturn = poolService.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
+		Genome toReturn = pool.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
 
 		// Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS
 		// logic

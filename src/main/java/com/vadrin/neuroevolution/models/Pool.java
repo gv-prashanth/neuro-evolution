@@ -1,4 +1,4 @@
-package com.vadrin.neuroevolution.services;
+package com.vadrin.neuroevolution.models;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,12 +9,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vadrin.neuroevolution.models.ConnectionGene;
-import com.vadrin.neuroevolution.models.Genome;
-import com.vadrin.neuroevolution.models.NodeGene;
-import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.services.MathService;
+import com.vadrin.neuroevolution.services.MutationService;
 
-public class PoolService {
+public class Pool {
 
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
 	private int referenceNodeCounter = 0;
@@ -27,7 +25,7 @@ public class PoolService {
 	
 	private static final int GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES = 15;
 
-	public PoolService(int poolSize, int inputNodesSize, int outputNodesSize) {
+	public Pool(int poolSize, int inputNodesSize, int outputNodesSize) {
 		super();
 		startNewGeneration();
 		constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
@@ -273,7 +271,7 @@ public class PoolService {
 	
 	
 	
-	boolean isSpeciesStagnated(String thisSpeciesId) {
+	public boolean isSpeciesStagnated(String thisSpeciesId) {
 		Iterator<Integer> genomesI = getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog()
 				.keySet().stream().sorted((a, b) -> Integer.compare(b, a))
 				.limit(GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES).iterator();

@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.Pool;
 import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 import com.vadrin.neuroevolution.services.CrossOverService;
 import com.vadrin.neuroevolution.services.FeedForwardService;
 import com.vadrin.neuroevolution.services.MutationService;
-import com.vadrin.neuroevolution.services.PoolService;
 import com.vadrin.neuroevolution.services.SelectionService;
 import com.vadrin.neuroevolution.services.SpeciationService;
 
@@ -36,17 +36,17 @@ public class NEAT {
 		return feedForwardService.feedForward(genome, input);
 	}
 
-	public void stepOneGeneration(PoolService poolService) {
+	public void stepOneGeneration(Pool pool) {
 		// increase generation counter
-		poolService.startNewGeneration();
+		pool.startNewGeneration();
 		// Load the speciesId for each species
-		speciationService.speciate(poolService);
+		speciationService.speciate(pool);
 		// Top x% of genomes in each species are selected.
-		selectionService.select(poolService);
+		selectionService.select(pool);
 		// within the species select two random parents are re populate the pool
-		crossOverService.crossOver(poolService);
+		crossOverService.crossOver(pool);
 		// mutate all except some best
-		mutationService.mutate(poolService);
+		mutationService.mutate(pool);
 	}
 
 }

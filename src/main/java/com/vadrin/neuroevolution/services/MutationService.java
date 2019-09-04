@@ -16,6 +16,7 @@ import com.vadrin.neuroevolution.models.Genome;
 import com.vadrin.neuroevolution.models.MutationType;
 import com.vadrin.neuroevolution.models.NodeGene;
 import com.vadrin.neuroevolution.models.NodeGeneType;
+import com.vadrin.neuroevolution.models.Pool;
 
 @Service
 public class MutationService {
@@ -28,8 +29,8 @@ public class MutationService {
 	// have to figure right value
 	private static final double X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE = 0.1d; // Plus or minus 10%
 	private static final double X_CHANCE_FOR_TOGGLING_GENOME_ENABLE_FLAG = 0.03d;
-	protected static final double X_RANDOM_WEIGHT_LOWER_BOUND = -40d;
-	protected static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
+	public static final double X_RANDOM_WEIGHT_LOWER_BOUND = -40d;
+	public static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
 	@Autowired
 	private SelectionService selectionService;
@@ -40,36 +41,36 @@ public class MutationService {
 		this.luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 	}
 
-	public void mutate(PoolService poolService) {
+	public void mutate(Pool pool) {
 		prepare();
-		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
+		Iterator<Genome> genomeI = pool.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
 			// if this genome was born in this generation via crossover, then dont mutate it already
-			if(genome.getBirthGeneration()!=poolService.getGENERATION()) {
+			if(genome.getBirthGeneration()!=pool.getGENERATION()) {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy
-				if (!selectionService.championsWhoShouldntBeHarmed(poolService).stream()
+				if (!selectionService.championsWhoShouldntBeHarmed(pool).stream()
 						.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 					Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 							.iterator();
 					while (mTypeI.hasNext()) {
 						MutationType mutationType = mTypeI.next();
-						mutate(poolService, genome, mutationType);
+						mutate(pool, genome, mutationType);
 					}
 				}	
 			}
 		}
 	}
 
-	private void mutate(PoolService poolService, Genome genome, MutationType mutationType) {
+	private void mutate(Pool pool, Genome genome, MutationType mutationType) {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
-			mutationAddConnectionGene(poolService, genome);
+			mutationAddConnectionGene(pool, genome);
 			break;
 		case ADDNODEGENE:
-			mutationAddNodeGene(poolService, genome);
+			mutationAddNodeGene(pool, genome);
 			break;
 		case ALTERWEIGHTOFCONNECTIONGENE:
 			mutationAlterWeightOfConnectionGene(genome);
@@ -103,7 +104,7 @@ public class MutationService {
 		});
 	}
 
-	private void mutationAddNodeGene(PoolService poolService, Genome genome) {
+	private void mutationAddNodeGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
 			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
@@ -122,10 +123,10 @@ public class MutationService {
 												.getReferenceNodeNumber())
 						.findAny().get();
 				int referenceNodeNumber = luckyConnectionGenesInThisGeneration.get(refCon).getReferenceNodeNumber();
-				newNodeGene = poolService.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
+				newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
 						NodeGeneType.HIDDEN);
 			} catch (NoSuchElementException e) {
-				newNodeGene = poolService.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
+				newNodeGene = pool.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
 				luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
 			}
 			genome.addNode(newNodeGene);
@@ -133,9 +134,9 @@ public class MutationService {
 			// Now that the node is added. Lets make connections and also lets not forget to
 			// disable the prev connection
 			connectionGene.setEnabled(false);
-			ConnectionGene firstHalf = poolService
+			ConnectionGene firstHalf = pool
 					.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(), newNodeGene, 1.0d);
-			ConnectionGene secondHalf = poolService.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
+			ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
 					connectionGene.getToNode(), connectionGene.getWeight());
 
 			genome.addConnection(firstHalf);
@@ -143,7 +144,7 @@ public class MutationService {
 		}
 	}
 
-	private void mutationAddConnectionGene(PoolService poolService, Genome genome) {
+	private void mutationAddConnectionGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection
 			int randNodePos1 = (int) MathService.randomNumber(0d, genome.getNodeGenesSorted().size());
@@ -175,11 +176,11 @@ public class MutationService {
 				if (!genome.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
 					ConnectionGene toAdd = null;
 					try {
-						toAdd = poolService.constructConnectionGeneWithExistingInnovationNumber(poolService
+						toAdd = pool.constructConnectionGeneWithExistingInnovationNumber(pool
 								.getInnovationNumber(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()), from,
 								to);
 					} catch (NoSuchElementException e) {
-						toAdd = poolService.constructConnectionGeneWithNewInnovationNumber(from, to);
+						toAdd = pool.constructConnectionGeneWithNewInnovationNumber(from, to);
 					}
 					genome.addConnection(toAdd);
 				}

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.Pool;
 
 @Service
 public class SpeciationService {
@@ -18,8 +19,8 @@ public class SpeciationService {
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
 
-	public void speciate(PoolService poolService) {
-		Iterator<Genome> iterator = poolService.getGenomes().iterator();
+	public void speciate(Pool pool) {
+		Iterator<Genome> iterator = pool.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
 			markThisGenomeAsNewSpecies(firstGenome);
@@ -27,10 +28,10 @@ public class SpeciationService {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			boolean notDone = true;
-			Iterator<String> speciesIterator = poolService.getSpeciesIds().iterator();
+			Iterator<String> speciesIterator = pool.getSpeciesIds().iterator();
 			while (speciesIterator.hasNext()) {
 				String thisSpeciesId = speciesIterator.next();
-				if (isSameSpecies(genome, poolService.getReferenceGenomeOfSpeciesId(thisSpeciesId))) {
+				if (isSameSpecies(genome, pool.getReferenceGenomeOfSpeciesId(thisSpeciesId))) {
 					genome.setReferenceSpeciesNumber(thisSpeciesId);
 					notDone = false;
 					break;
@@ -40,7 +41,7 @@ public class SpeciationService {
 				markThisGenomeAsNewSpecies(genome);
 		}
 		System.out.print("Species Pop breakdown: ");
-		poolService.getSpeciesIds().forEach(sId -> System.out.print(poolService.getAllGenomesOfThisSpecies(sId).size()+","));
+		pool.getSpeciesIds().forEach(sId -> System.out.print(pool.getAllGenomesOfThisSpecies(sId).size()+","));
 		System.out.println();
 	}
 
