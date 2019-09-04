@@ -22,13 +22,7 @@ public class SpeciationService {
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
 
-	@Autowired
-	private PoolService poolService;
-
-	@Autowired
-	private MathService mathService;
-
-	public void speciate() {
+	public void speciate(PoolService poolService) {
 		Iterator<Genome> iterator = poolService.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();
@@ -37,10 +31,10 @@ public class SpeciationService {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			boolean notDone = true;
-			Iterator<String> speciesIterator = getSpeciesIds().iterator();
+			Iterator<String> speciesIterator = poolService.getSpeciesIds().iterator();
 			while (speciesIterator.hasNext()) {
 				String thisSpeciesId = speciesIterator.next();
-				if (isSameSpecies(genome.getId(), thisSpeciesId)) {
+				if (isSameSpecies(genome, poolService.getReferenceGenomeOfSpeciesId(thisSpeciesId))) {
 					genome.setReferenceSpeciesNumber(thisSpeciesId);
 					notDone = false;
 					break;
@@ -50,7 +44,7 @@ public class SpeciationService {
 				markThisGenomeAsNewSpecies(genome);
 		}
 		System.out.print("Species Pop breakdown: ");
-		getSpeciesIds().forEach(sId -> System.out.print(getAllGenomesOfThisSpecies(sId).size()+","));
+		poolService.getSpeciesIds().forEach(sId -> System.out.print(poolService.getAllGenomesOfThisSpecies(sId).size()+","));
 		System.out.println();
 	}
 
@@ -58,9 +52,9 @@ public class SpeciationService {
 		genome.setReferenceSpeciesNumber(UUID.randomUUID().toString());
 	}
 
-	private boolean isSameSpecies(String genomeId, String speciesId) {
-		List<ConnectionGene> connectionList1 = poolService.getGenome(genomeId).getConnectionGenesSorted();
-		List<ConnectionGene> connectionList2 = poolService.getGenome(getReferenceGenomeOfSpeciesId(speciesId))
+	private boolean isSameSpecies(Genome genome, Genome referenceGenome) {
+		List<ConnectionGene> connectionList1 = genome.getConnectionGenesSorted();
+		List<ConnectionGene> connectionList2 = referenceGenome
 				.getConnectionGenesSorted();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
@@ -132,50 +126,6 @@ public class SpeciationService {
 
 		double deltaScore = ((C1 * E) / N) + ((C2 * D) / N) + C3 * W;
 		return deltaScore < DELTAT;
-	}
-
-	private String getReferenceGenomeOfSpeciesId(String speciesId) {
-		return poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
-				.findFirst().get().getId();
-	}
-
-	public Set<String> getSpeciesIds() {
-		Set<String> toReturn = new HashSet<String>();
-		poolService.getGenomes().forEach(g -> {
-			if (g.getReferenceSpeciesNumber() != null)
-				toReturn.add(g.getReferenceSpeciesNumber());
-		});
-		return toReturn;
-	}
-
-	public Genome getRandomGenomeOfThisSpecies(String thisSpeciesId) {
-		int randomPos = (int) mathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).skip(randomPos)
-				.findFirst().get();
-	}
-
-	public int getNumberOfGenomesInSpecies(String thisSpeciesId) {
-		return (int) poolService.getGenomes().stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).count();
-	}
-
-	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(String thisSpeciesId) {
-		Set<Genome> genomesToKill = new HashSet<Genome>();
-		poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
-				.forEach(g -> genomesToKill.add(g));
-		genomesToKill.forEach(g -> poolService.killGenome(g.getId()));
-	}
-
-	public Genome getMaxFitGenomeOfThisSpecies(String thisSpeciesId) {
-		return poolService.getGenomes().stream()
-				.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
-	}
-
-	public Set<Genome> getAllGenomesOfThisSpecies(String speciesId) {
-		return poolService.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
-				.collect(Collectors.toSet());
 	}
 
 }

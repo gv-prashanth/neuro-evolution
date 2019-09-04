@@ -32,9 +32,6 @@ public class MutationService {
 	protected static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
 	@Autowired
-	private PoolService poolService;
-
-	@Autowired
 	private MathService mathService;
 
 	@Autowired
@@ -46,7 +43,7 @@ public class MutationService {
 		this.luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
 	}
 
-	public void mutate() {
+	public void mutate(PoolService poolService) {
 		prepare();
 		Iterator<Genome> genomeI = poolService.getGenomes().iterator();
 		while (genomeI.hasNext()) {
@@ -56,26 +53,26 @@ public class MutationService {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy
-				if (!selectionService.championsWhoShouldntBeHarmed().stream()
+				if (!selectionService.championsWhoShouldntBeHarmed(poolService).stream()
 						.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 					Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 							.iterator();
 					while (mTypeI.hasNext()) {
 						MutationType mutationType = mTypeI.next();
-						mutate(genome, mutationType);
+						mutate(poolService, genome, mutationType);
 					}
 				}	
 			}
 		}
 	}
 
-	private void mutate(Genome genome, MutationType mutationType) {
+	private void mutate(PoolService poolService, Genome genome, MutationType mutationType) {
 		switch (mutationType) {
 		case ADDCONNECTIONGENE:
-			mutationAddConnectionGene(genome);
+			mutationAddConnectionGene(poolService, genome);
 			break;
 		case ADDNODEGENE:
-			mutationAddNodeGene(genome);
+			mutationAddNodeGene(poolService, genome);
 			break;
 		case ALTERWEIGHTOFCONNECTIONGENE:
 			mutationAlterWeightOfConnectionGene(genome);
@@ -109,7 +106,7 @@ public class MutationService {
 		});
 	}
 
-	private void mutationAddNodeGene(Genome genome) {
+	private void mutationAddNodeGene(PoolService poolService, Genome genome) {
 		if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
 			int randomConn = (int) mathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
@@ -149,7 +146,7 @@ public class MutationService {
 		}
 	}
 
-	private void mutationAddConnectionGene(Genome genome) {
+	private void mutationAddConnectionGene(PoolService poolService, Genome genome) {
 		if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection
 			int randNodePos1 = (int) mathService.randomNumber(0d, genome.getNodeGenesSorted().size());

@@ -10,18 +10,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
 import com.vadrin.neuroevolution.models.NodeGene;
 import com.vadrin.neuroevolution.models.NodeGeneType;
 
-@Service
 public class PoolService {
-
-	@Autowired
-	private MathService mathService;
 
 	private Map<String, Genome> genomesPool = new HashMap<String, Genome>();
 	private int referenceNodeCounter = 0;
@@ -31,6 +26,14 @@ public class PoolService {
 	// TODO: Need to get rid of this below variable. Should get from NEAT class right?
 	private int POOLCAPACITY;
 	private int GENERATION;
+	
+	private static final int GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES = 15;
+
+	public PoolService(int poolSize, int inputNodesSize, int outputNodesSize) {
+		super();
+		startNewGeneration();
+		constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
+	}
 
 	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
@@ -191,7 +194,7 @@ public class PoolService {
 	}
 
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene) {
-		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene, mathService.randomNumber(
+		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene, MathService.randomNumber(
 				MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
@@ -213,7 +216,7 @@ public class PoolService {
 
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
-		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber, mathService
+		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber, MathService
 				.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND),
 				fromNodeGene, toNodeGene);
 	}
@@ -226,4 +229,71 @@ public class PoolService {
 		return GENERATION;
 	}
 
+	public Genome getReferenceGenomeOfSpeciesId(String speciesId) {
+		return getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
+				.findFirst().get();
+	}
+
+	public Set<String> getSpeciesIds() {
+		Set<String> toReturn = new HashSet<String>();
+		getGenomes().forEach(g -> {
+			if (g.getReferenceSpeciesNumber() != null)
+				toReturn.add(g.getReferenceSpeciesNumber());
+		});
+		return toReturn;
+	}
+
+	public Genome getRandomGenomeOfThisSpecies(String thisSpeciesId) {
+		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
+		return getGenomes().stream()
+				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).skip(randomPos)
+				.findFirst().get();
+	}
+
+	public int getNumberOfGenomesInSpecies(String thisSpeciesId) {
+		return (int) getGenomes().stream()
+				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).count();
+	}
+
+	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(String thisSpeciesId) {
+		Set<Genome> genomesToKill = new HashSet<Genome>();
+		getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				.forEach(g -> genomesToKill.add(g));
+		genomesToKill.forEach(g -> killGenome(g.getId()));
+	}
+
+	public Genome getMaxFitGenomeOfThisSpecies(String thisSpeciesId) {
+		return getGenomes().stream()
+				.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
+	}
+
+	public Set<Genome> getAllGenomesOfThisSpecies(String speciesId) {
+		return getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
+				.collect(Collectors.toSet());
+	}
+	
+	
+	
+	boolean isSpeciesStagnated(String thisSpeciesId) {
+		Iterator<Integer> genomesI = getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog()
+				.keySet().stream().sorted((a, b) -> Integer.compare(b, a))
+				.limit(GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES).iterator();
+		double prevVal = genomesI.hasNext()
+				? getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog().get(genomesI.next())
+				: 0d;
+		if (prevVal == 0d)
+			return false;
+		int counter = 1;
+		while (genomesI.hasNext()) {
+			double thisNum = getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog()
+					.get(genomesI.next());
+			if (prevVal <= thisNum) {
+				counter++;
+			}
+		}
+		if (counter >= GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES)
+			return true;
+		return false;
+	}
 }

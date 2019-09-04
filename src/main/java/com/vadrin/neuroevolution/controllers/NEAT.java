@@ -18,9 +18,6 @@ import com.vadrin.neuroevolution.services.SpeciationService;
 public class NEAT {
 
 	@Autowired
-	private PoolService poolService;
-
-	@Autowired
 	private FeedForwardService feedForwardService;
 
 	@Autowired
@@ -35,34 +32,21 @@ public class NEAT {
 	@Autowired
 	private MutationService mutationService;
 
-	public void instantiateNEAT(int poolSize, int inputNodesSize, int outputNodesSize) {
-		poolService.startNewGeneration();
-		poolService.constructRandomGenomePool(poolSize, inputNodesSize, outputNodesSize);
+	public double[] process(Genome genome, double[] input) throws InvalidInputException {
+		return feedForwardService.feedForward(genome, input);
 	}
 
-	public Collection<Genome> getGenomes() {
-		return poolService.getGenomes();
-	}
-
-	public double[] process(String genomeId, double[] input) throws InvalidInputException {
-		return feedForwardService.feedForward(poolService.getGenome(genomeId), input);
-	}
-
-	public void stepOneGeneration() {
+	public void stepOneGeneration(PoolService poolService) {
 		// increase generation counter
 		poolService.startNewGeneration();
 		// Load the speciesId for each species
-		speciationService.speciate();
+		speciationService.speciate(poolService);
 		// Top x% of genomes in each species are selected.
-		selectionService.select();
+		selectionService.select(poolService);
 		// within the species select two random parents are re populate the pool
-		crossOverService.crossOver();
+		crossOverService.crossOver(poolService);
 		// mutate all except some best
-		mutationService.mutate();
-	}
-
-	public int getGeneration() {
-		return poolService.getGENERATION();
+		mutationService.mutate(poolService);
 	}
 
 }
