@@ -32,9 +32,6 @@ public class MutationService {
 	protected static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
 	@Autowired
-	private MathService mathService;
-
-	@Autowired
 	private SelectionService selectionService;
 
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
@@ -96,10 +93,10 @@ public class MutationService {
 			if (connectionGene.isLucky(CHANCE_FOR_WEIGHT_MUTATION)) {
 				if (connectionGene.isLucky(IF_WEIGHT_MUTATION_THEN_CHANCE_FOR_RANDOM_WEIGHT)) {
 					connectionGene.setWeight(
-							mathService.randomNumber(X_RANDOM_WEIGHT_LOWER_BOUND, X_RANDOM_WEIGHT_UPPER_BOUND));
+							MathService.randomNumber(X_RANDOM_WEIGHT_LOWER_BOUND, X_RANDOM_WEIGHT_UPPER_BOUND));
 				} else {
 					connectionGene.setWeight(connectionGene.getWeight()
-							* mathService.randomNumber(1 - X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE,
+							* MathService.randomNumber(1 - X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE,
 									1 + X_IF_WEIGHT_MUTATION_THEN_PERTUBED_VARIANCE_PERCENTAGE));
 				}
 			}
@@ -107,9 +104,9 @@ public class MutationService {
 	}
 
 	private void mutationAddNodeGene(PoolService poolService, Genome genome) {
-		if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
+		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
-			int randomConn = (int) mathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
+			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
 			// select a random connection gene to add the node in between
 			ConnectionGene connectionGene = genome.getConnectionGenesSorted().get(randomConn);
 			NodeGene newNodeGene;
@@ -147,9 +144,9 @@ public class MutationService {
 	}
 
 	private void mutationAddConnectionGene(PoolService poolService, Genome genome) {
-		if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
+		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection
-			int randNodePos1 = (int) mathService.randomNumber(0d, genome.getNodeGenesSorted().size());
+			int randNodePos1 = (int) MathService.randomNumber(0d, genome.getNodeGenesSorted().size());
 			NodeGene n1 = genome.getNodeGenesSorted().get(randNodePos1);
 			NodeGene n2 = null;
 			try {

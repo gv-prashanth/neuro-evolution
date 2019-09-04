@@ -3,7 +3,6 @@ package com.vadrin.neuroevolution.services;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
@@ -14,9 +13,6 @@ import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 
 @Service
 public class FeedForwardService {
-	
-	@Autowired
-	private MathService mathService;
 
 	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
@@ -47,7 +43,7 @@ public class FeedForwardService {
 							* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 				}
 			}
-			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
 			hiddenNodeGene.setOutput(finalOutput);
 		}
 
@@ -63,7 +59,7 @@ public class FeedForwardService {
 				sumOfInput += tempConnGene.getWeight()
 						* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 			}
-			double finalOutput = mathService.applySigmiodActivationFunction(sumOfInput);
+			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
 			outputNodeGene.setOutput(finalOutput);
 		}
 

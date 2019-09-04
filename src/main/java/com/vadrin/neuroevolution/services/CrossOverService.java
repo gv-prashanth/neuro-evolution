@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
@@ -22,12 +21,6 @@ public class CrossOverService {
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
-	@Autowired
-	private SpeciationService speciationService;
-
-	@Autowired
-	private MathService mathService;
-
 	public void crossOver(PoolService poolService) {
 		//System.out.println("pop before crossover " + poolService.getGenomes().size());
 
@@ -36,7 +29,7 @@ public class CrossOverService {
 		Iterator<Genome> allGenomesInPool = poolService.getGenomes().iterator();
 		while (allGenomesInPool.hasNext()) {
 			Genome parent1 = allGenomesInPool.next();
-			if (mathService.randomNumber(0d, 1d) < CHANCE_FOR_INTER_SPECIES_MATING) {
+			if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_INTER_SPECIES_MATING) {
 				// This parent is lucky. Lets interspecies cross over it
 				Genome parent2;
 				try {
@@ -73,7 +66,7 @@ public class CrossOverService {
 		});
 		//System.out.println("pop after intra crossover " + poolService.getGenomes().size());
 		while (poolService.getGenomes().size() < poolService.getPOOLCAPACITY()) {
-			int randomPos = (int) mathService.randomNumber(0, poolService.getSpeciesIds().size() - 1);
+			int randomPos = (int) MathService.randomNumber(0, poolService.getSpeciesIds().size() - 1);
 			String randomSpeciesId = poolService.getSpeciesIds().stream().skip(randomPos).findAny().get();
 			// pick any two random genomes in this species
 			// and then cross over between them

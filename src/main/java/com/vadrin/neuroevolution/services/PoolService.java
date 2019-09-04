@@ -9,8 +9,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
 import com.vadrin.neuroevolution.models.NodeGene;

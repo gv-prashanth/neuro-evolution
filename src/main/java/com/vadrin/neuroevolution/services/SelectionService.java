@@ -1,10 +1,8 @@
 package com.vadrin.neuroevolution.services;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,9 +11,6 @@ public class SelectionService {
 	private static final int NUMBER_OF_CHAMPIONS_TO_BE_LEFT_UNHARMED_IN_EACH_SPECIES = 1;
 	private static final int MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED = 5;
 	protected static final double FRACTION_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
-
-	@Autowired
-	private SpeciationService speciationService;
 
 	public void select(PoolService poolService) {
 		// sort within each species

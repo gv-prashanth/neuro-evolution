@@ -2,9 +2,6 @@ package com.vadrin.neuroevolution.services;
 
 import java.util.Random;
 
-import org.springframework.stereotype.Service;
-
-@Service
 public class MathService {
 
 	public static double randomNumber(double rangeMin, double rangeMax) {
