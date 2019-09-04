@@ -43,7 +43,7 @@ public class MutationService {
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
 			// if this genome was born in this generation via crossover, then dont mutate it already
-			if(genome.getBirthGeneration()!=pool.getGENERATION()) {
+			if(genome.getBirthGeneration()!=pool.getReferenceGenerationCounter()) {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy

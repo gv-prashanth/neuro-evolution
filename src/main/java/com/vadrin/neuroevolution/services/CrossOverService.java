@@ -66,7 +66,7 @@ public class CrossOverService {
 			}
 		});
 		//System.out.println("pop after intra crossover " + pool.getGenomes().size());
-		while (pool.getGenomes().size() < pool.getPOOLCAPACITY()) {
+		while (pool.getGenomes().size() < pool.getPoolCapacity()) {
 			int randomPos = (int) MathService.randomNumber(0, pool.getSpeciesIds().size() - 1);
 			String randomSpeciesId = pool.getSpeciesIds().stream().skip(randomPos).findAny().get();
 			// pick any two random genomes in this species
@@ -82,16 +82,15 @@ public class CrossOverService {
 
 	//TODO: Need to visit this
 	private int calculateSpeciesPopToReachForThisSpecies(Pool pool, String thisSpeciesId) {
-		return (int) ((((double) pool.getPOOLCAPACITY()) / pool.getGenomes().size())
+		return (int) ((((double) pool.getPoolCapacity()) / pool.getGenomes().size())
 				* pool.getNumberOfGenomesInSpecies(thisSpeciesId));
 	}
 
 	private Genome constructGenomeByCrossingOver(Pool pool, final Genome genome1, final Genome genome2) {
-		if (pool.getGenomes().size() >= pool.getPOOLCAPACITY()) {
+		if (pool.getGenomes().size() >= pool.getPoolCapacity()) {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;
 		}
-
 		List<ConnectionGene> connectionList1 = genome1.getConnectionGenesSorted();
 		List<ConnectionGene> connectionList2 = genome2.getConnectionGenesSorted();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
