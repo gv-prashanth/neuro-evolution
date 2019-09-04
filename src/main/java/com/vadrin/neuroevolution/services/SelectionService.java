@@ -28,7 +28,7 @@ public class SelectionService {
 								* (pool.getGenomes().stream()
 										.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)))
 												.count()))
-						.forEach(toDel -> pool.killGenome(toDel.getId()));
+						.forEach(toDel -> pool.killGenome(toDel));
 			}
 		});
 	}

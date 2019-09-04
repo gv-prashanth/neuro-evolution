@@ -1,10 +1,8 @@
 package com.vadrin.neuroevolution.models;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,11 +13,9 @@ import com.vadrin.neuroevolution.services.MutationService;
 public class Pool {
 
 	private final int poolCapacity;
-	// TODO: I dont think this should be a map. Lets make it a set.
-	private Map<String, NodeGene> nodeGenesPool;
+	private Set<NodeGene> nodeGenesPool;
 	private Set<ConnectionGene> connectionGenesPool;
-	// TODO: I dont think this should be a map. Lets make it a Set
-	private Map<String, Genome> genomesPool;
+	private Set<Genome> genomesPool;
 	private int referenceNodeCounter;
 	private int referenceInnovationCounter;
 	private int referenceGenerationCounter;
@@ -31,9 +27,9 @@ public class Pool {
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
 		this.poolCapacity = poolCapacity;
-		this.nodeGenesPool = new HashMap<String, NodeGene>();
+		this.nodeGenesPool = new HashSet<NodeGene>();
 		this.connectionGenesPool = new HashSet<ConnectionGene>();
-		this.genomesPool = new HashMap<String, Genome>();
+		this.genomesPool = new HashSet<Genome>();
 		this.referenceNodeCounter = 0;
 		this.referenceInnovationCounter = 0;
 		this.referenceGenerationCounter = 0;
@@ -83,20 +79,16 @@ public class Pool {
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes, referenceGenerationCounter);
-		genomesPool.put(toReturn.getId(), toReturn);
+		genomesPool.add(toReturn);
 		return toReturn;
 	}
 
 	public Collection<Genome> getGenomes() {
-		return genomesPool.values();
+		return genomesPool;
 	}
 
-	public Genome getGenome(String id) {
-		return genomesPool.get(id);
-	}
-
-	public void killGenome(String genomeId) {
-		genomesPool.remove(genomeId);
+	public void killGenome(Genome genome) {
+		genomesPool.remove(genome);
 	}
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
@@ -146,25 +138,25 @@ public class Pool {
 		}
 		inputNodeGenes.addAll(outputNodeGenes);
 		Genome genome = new Genome(inputNodeGenes, connectionGenes, referenceGenerationCounter);
-		genomesPool.put(genome.getId(), genome);
+		genomesPool.add(genome);
 		return genome;
 	}
 
 	private Genome constructCopyGenome(Genome oriGenome) {
 		Genome copyGenome = constructGenomeFromSampleConnectionGenes(
 				oriGenome.getConnectionGenesSorted().stream().collect(Collectors.toSet()));
-		genomesPool.put(copyGenome.getId(), copyGenome);
+		genomesPool.add(copyGenome);
 		return copyGenome;
 	}
 
 	public Genome getGenomeHavingConnection(String connectionId) {
-		return genomesPool.values().stream().filter(
+		return genomesPool.stream().filter(
 				g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
 				.findFirst().get();
 	}
 
 	public Genome getGenomeHavingNode(String nodeId) {
-		return genomesPool.values().stream()
+		return genomesPool.stream()
 				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId)))
 				.findFirst().get();
 	}
@@ -188,13 +180,13 @@ public class Pool {
 	public NodeGene constructRandomNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
-		nodeGenesPool.put(toReturn.getId(), toReturn);
+		nodeGenesPool.add(toReturn);
 		return toReturn;
 	}
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
-		nodeGenesPool.put(toReturn.getId(), toReturn);
+		nodeGenesPool.add(toReturn);
 		return toReturn;
 	}
 
@@ -264,7 +256,7 @@ public class Pool {
 		Set<Genome> genomesToKill = new HashSet<Genome>();
 		getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 				.forEach(g -> genomesToKill.add(g));
-		genomesToKill.forEach(g -> killGenome(g.getId()));
+		genomesToKill.forEach(g -> killGenome(g));
 	}
 
 	public Genome getMaxFitGenomeOfThisSpecies(String thisSpeciesId) {
@@ -317,5 +309,9 @@ public class Pool {
 		});
 
 		return toReturn;
+	}
+
+	public Genome getGenome(String gid) {
+		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
 	}
 }
