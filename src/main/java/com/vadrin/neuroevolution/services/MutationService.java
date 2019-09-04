@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
@@ -32,9 +31,6 @@ public class MutationService {
 	public static final double X_RANDOM_WEIGHT_LOWER_BOUND = -40d;
 	public static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
-	@Autowired
-	private SelectionService selectionService;
-
 	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration;
 
 	private void prepare() {
@@ -51,7 +47,7 @@ public class MutationService {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy
-				if (!selectionService.championsWhoShouldntBeHarmed(pool).stream()
+				if (!pool.championsWhoShouldntBeHarmed().stream()
 						.anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
 					Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 							.iterator();
