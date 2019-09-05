@@ -99,8 +99,8 @@ public class MutationService {
 			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
 			// select a random connection gene to add the node in between
 			ConnectionGene connectionGene = genome.getConnectionGenesSorted().get(randomConn);
-			if(pool.getLuckyConnectionGenesInThisGeneration().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
-				InnovationInformation referenceInnovationInformation = pool.getLuckyConnectionGenesInThisGeneration().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
+			if(pool.getInnovationInformation().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
+				InnovationInformation referenceInnovationInformation = pool.getInnovationInformation().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
 				NodeGene newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
 						NodeGeneType.HIDDEN);
 				genome.addNode(newNodeGene);
@@ -123,7 +123,7 @@ public class MutationService {
 						connectionGene.getToNode(), connectionGene.getWeight());
 				genome.addConnection(firstHalf);
 				genome.addConnection(secondHalf);
-				pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber(), firstHalf.getReferenceInnovationNumber(), secondHalf.getReferenceInnovationNumber());
+				pool.addInnovationInformation(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber(), firstHalf.getReferenceInnovationNumber(), secondHalf.getReferenceInnovationNumber());
 			}
 		}
 	}

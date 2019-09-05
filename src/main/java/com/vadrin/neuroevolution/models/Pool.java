@@ -28,7 +28,7 @@ public class Pool {
 	private static final int MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED = 5;
 
 	// TODO: this name needs to be changed. Its the map of innovationnumber to nodereferencenumbers which got mutated so far.
-	private Set<InnovationInformation> luckyConnectionGenesInThisGeneration = new HashSet<InnovationInformation>();
+	private Set<InnovationInformation> innovationInformation = new HashSet<InnovationInformation>();
 
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
@@ -320,12 +320,12 @@ public class Pool {
 		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
 	}
 
-	public Set<InnovationInformation> getLuckyConnectionGenesInThisGeneration() {
-		return luckyConnectionGenesInThisGeneration;
+	public Set<InnovationInformation> getInnovationInformation() {
+		return innovationInformation;
 	}
 
-	public void addLuckyConnectionGenesInThisGeneration(Integer referenceInnovationNumber, Integer createdReferenceNodeNumber, Integer createdFromReferenceInnovationNumber, Integer createdToReferenceInnovationNumber) {
-		luckyConnectionGenesInThisGeneration.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber, createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
+	public void addInnovationInformation(Integer referenceInnovationNumber, Integer createdReferenceNodeNumber, Integer createdFromReferenceInnovationNumber, Integer createdToReferenceInnovationNumber) {
+		innovationInformation.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber, createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
 	}
 	
 	public List<Genome> getSortedGenomes() {
