@@ -278,15 +278,15 @@ public class Pool {
 		Iterator<Integer> genomesI = getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog().keySet().stream()
 				.sorted((a, b) -> Integer.compare(b, a))
 				.limit(GENERATIONS_AFTER_WHICH_TO_CUTOFF_THE_SPECIES_INCASE_FITNESS_STAGNATES).iterator();
-		double prevVal = genomesI.hasNext()
+		double descPrevVal = genomesI.hasNext()
 				? getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog().get(genomesI.next())
 				: 0d;
-		if (prevVal == 0d)
+		if (descPrevVal == 0d)
 			return false;
 		int counter = 1;
 		while (genomesI.hasNext()) {
 			double thisNum = getMaxFitGenomeOfThisSpecies(thisSpeciesId).getFitnessLog().get(genomesI.next());
-			if (prevVal <= thisNum) {
+			if (descPrevVal <= thisNum) {
 				counter++;
 			}
 		}
