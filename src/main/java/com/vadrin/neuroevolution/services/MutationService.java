@@ -163,7 +163,7 @@ public class MutationService {
 					ConnectionGene toAdd = null;
 					try {
 						toAdd = pool.constructConnectionGeneWithExistingInnovationNumber(
-								pool.getInnovationNumber(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
+								pool.getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
 								from, to);
 					} catch (NoSuchElementException e) {
 						toAdd = pool.constructConnectionGeneWithNewInnovationNumber(from, to);
