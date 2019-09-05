@@ -198,21 +198,19 @@ public class Pool {
 				MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
+	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
 			double weight) {
 		referenceInnovationCounter++;
-		if(fromNodeGene.getReferenceNodeNumber()>toNodeGene.getReferenceNodeNumber() && toNodeGene.getType()!=NodeGeneType.OUTPUT)
-			System.out.println("BIG ISSUE HERE. NEED TO FIX IT BADLY");
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
 				referenceInnovationCounter);
 		connectionGenesPool.add(toReturn);
 		return toReturn;
 	}
 
+	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
-		if(fromNodeGene.getReferenceNodeNumber()>toNodeGene.getReferenceNodeNumber() && toNodeGene.getType()!=NodeGeneType.OUTPUT)
-			System.out.println("ANOTHER ISSUE HERE. NEED TO FIX IT BADLY");
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
 		connectionGenesPool.add(toReturn);
 		return toReturn;
