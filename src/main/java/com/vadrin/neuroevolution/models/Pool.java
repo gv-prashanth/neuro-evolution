@@ -28,7 +28,7 @@ public class Pool {
 	private static final int MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED = 5;
 
 	// TODO: this name needs to be changed. Its the map of innovationnumber to nodereferencenumbers which got mutated so far.
-	private Map<Integer, Integer> luckyConnectionGenesInThisGeneration = new HashMap<Integer, Integer>();
+	private Set<InnovationInformation> luckyConnectionGenesInThisGeneration = new HashSet<InnovationInformation>();
 
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
@@ -163,6 +163,7 @@ public class Pool {
 				.findFirst().get();
 	}
 
+	//TODO: This needs to be removed. it wont always give valid answers
 	public int getInnovationNumber(int fromReferenceNodeNumber, int toReferenceNodeNumber) {
 		Iterator<Genome> allGenomes = this.getGenomes().iterator();
 		while (allGenomes.hasNext()) {
@@ -200,6 +201,8 @@ public class Pool {
 	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
 			double weight) {
 		referenceInnovationCounter++;
+		if(fromNodeGene.getReferenceNodeNumber()>toNodeGene.getReferenceNodeNumber() && toNodeGene.getType()!=NodeGeneType.OUTPUT)
+			System.out.println("BIG ISSUE HERE. NEED TO FIX IT BADLY");
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
 				referenceInnovationCounter);
 		connectionGenesPool.add(toReturn);
@@ -208,6 +211,8 @@ public class Pool {
 
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
+		if(fromNodeGene.getReferenceNodeNumber()>toNodeGene.getReferenceNodeNumber() && toNodeGene.getType()!=NodeGeneType.OUTPUT)
+			System.out.println("ANOTHER ISSUE HERE. NEED TO FIX IT BADLY");
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
 		connectionGenesPool.add(toReturn);
 		return toReturn;
@@ -317,12 +322,12 @@ public class Pool {
 		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
 	}
 
-	public Map<Integer, Integer> getLuckyConnectionGenesInThisGeneration() {
+	public Set<InnovationInformation> getLuckyConnectionGenesInThisGeneration() {
 		return luckyConnectionGenesInThisGeneration;
 	}
 
-	public void addLuckyConnectionGenesInThisGeneration(Integer referenceInnovationNumber, Integer referenceNodeNumber) {
-		luckyConnectionGenesInThisGeneration.put(referenceInnovationNumber, referenceNodeNumber);
+	public void addLuckyConnectionGenesInThisGeneration(Integer referenceInnovationNumber, Integer createdReferenceNodeNumber, Integer createdFromReferenceInnovationNumber, Integer createdToReferenceInnovationNumber) {
+		luckyConnectionGenesInThisGeneration.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber, createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
 	}
 	
 	public List<Genome> getSortedGenomes() {

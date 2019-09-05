@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.vadrin.neuroevolution.models.ConnectionGene;
 import com.vadrin.neuroevolution.models.Genome;
+import com.vadrin.neuroevolution.models.InnovationInformation;
 import com.vadrin.neuroevolution.models.MutationType;
 import com.vadrin.neuroevolution.models.NodeGene;
 import com.vadrin.neuroevolution.models.NodeGeneType;
@@ -98,37 +99,20 @@ public class MutationService {
 			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
 			// select a random connection gene to add the node in between
 			ConnectionGene connectionGene = genome.getConnectionGenesSorted().get(randomConn);
-			try {
-				if(pool.getLuckyConnectionGenesInThisGeneration().keySet().stream().anyMatch(i -> connectionGene.getReferenceInnovationNumber()==i)) {
-					int referenceNodeNumber = pool.getLuckyConnectionGenesInThisGeneration().get(connectionGene.getReferenceInnovationNumber());
-					NodeGene newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
-							NodeGeneType.HIDDEN);
-					genome.addNode(newNodeGene);
-					// Now that the node is added. Lets make connections and also lets not forget to
-					// disable the prev connection
-					connectionGene.setEnabled(false);
-					ConnectionGene firstHalf = pool.constructConnectionGeneWithExistingInnovationNumber(pool.getInnovationNumber(connectionGene.getFromNode().getReferenceNodeNumber(), newNodeGene.getReferenceNodeNumber()), 1.0d, connectionGene.getFromNode(), newNodeGene);
-					ConnectionGene secondHalf = pool.constructConnectionGeneWithExistingInnovationNumber(pool.getInnovationNumber(newNodeGene.getReferenceNodeNumber(), connectionGene.getToNode().getReferenceNodeNumber()), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
-					genome.addConnection(firstHalf);
-					genome.addConnection(secondHalf);
-				} else {
-					NodeGene newNodeGene = pool.constructRandomNodeGene(NodeGeneType.HIDDEN);
-					pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber());
-					genome.addNode(newNodeGene);
-					// Now that the node is added. Lets make connections and also lets not forget to
-					// disable the prev connection
-					connectionGene.setEnabled(false);
-					ConnectionGene firstHalf = pool.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(),
-							newNodeGene, 1.0d);
-					ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
-							connectionGene.getToNode(), connectionGene.getWeight());
-					genome.addConnection(firstHalf);
-					genome.addConnection(secondHalf);
-				}
-			}catch(NoSuchElementException e) {
-				//TODO: This needs to be looked into. Incase that genome is long dead. we can now create a new connection entry and genome
+			if(pool.getLuckyConnectionGenesInThisGeneration().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
+				InnovationInformation referenceInnovationInformation = pool.getLuckyConnectionGenesInThisGeneration().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
+				NodeGene newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
+						NodeGeneType.HIDDEN);
+				genome.addNode(newNodeGene);
+				// Now that the node is added. Lets make connections and also lets not forget to
+				// disable the prev connection
+				connectionGene.setEnabled(false);
+				ConnectionGene firstHalf = pool.constructConnectionGeneWithExistingInnovationNumber(referenceInnovationInformation.getCreatedFromReferenceInnovationNumber(), 1.0d, connectionGene.getFromNode(), newNodeGene);
+				ConnectionGene secondHalf = pool.constructConnectionGeneWithExistingInnovationNumber(referenceInnovationInformation.getCreatedToReferenceInnovationNumber(), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
+				genome.addConnection(firstHalf);
+				genome.addConnection(secondHalf);
+			} else {
 				NodeGene newNodeGene = pool.constructRandomNodeGene(NodeGeneType.HIDDEN);
-				pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber());
 				genome.addNode(newNodeGene);
 				// Now that the node is added. Lets make connections and also lets not forget to
 				// disable the prev connection
@@ -139,8 +123,8 @@ public class MutationService {
 						connectionGene.getToNode(), connectionGene.getWeight());
 				genome.addConnection(firstHalf);
 				genome.addConnection(secondHalf);
+				pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber(), firstHalf.getReferenceInnovationNumber(), secondHalf.getReferenceInnovationNumber());
 			}
-
 		}
 	}
 
@@ -169,6 +153,8 @@ public class MutationService {
 			if ((n1.getType() != n2.getType())
 					|| (n1.getType() == n2.getType() && n1.getType() == NodeGeneType.HIDDEN)) {
 
+				//TODO: I dont think this logic is necessary. Like we learnt in mutationaddnode, sometimes a higher nodenumber can point to lower nodenumber.
+				// But the reason why i have left below is that without this logic, a output can point back to hidden or input which is wrong
 				NodeGene from = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n1 : n2;
 				NodeGene to = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n2 : n1;
 
