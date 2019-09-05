@@ -30,7 +30,6 @@ public class MutationService {
 	public static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
 	public void mutate(Pool pool) {
-		pool.clearLuckyConnectionGenesInThisGeneration();
 		Iterator<Genome> genomeI = pool.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();
@@ -92,47 +91,60 @@ public class MutationService {
 		});
 	}
 
+	//TODO: I donno why. But i see stale nodes/ nodes which arnt reaching output node.
 	private void mutationAddNodeGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
 			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
 			// select a random connection gene to add the node in between
 			ConnectionGene connectionGene = genome.getConnectionGenesSorted().get(randomConn);
-			NodeGene newNodeGene;
 			try {
-				ConnectionGene refCon = pool.getLuckyConnectionGenesInThisGeneration().keySet().stream()
-						.filter(oneOfLuckyConnectionGene -> genome
-								.getNodeGene(oneOfLuckyConnectionGene.getFromNode().getId())
-								.getReferenceNodeNumber() == genome.getNodeGene(connectionGene.getFromNode().getId())
-										.getReferenceNodeNumber()
-								&& genome.getNodeGene(oneOfLuckyConnectionGene.getToNode().getId())
-										.getReferenceNodeNumber() == genome
-												.getNodeGene(connectionGene.getToNode().getId())
-												.getReferenceNodeNumber())
-						.findAny().get();
-				int referenceNodeNumber = pool.getLuckyConnectionGenesInThisGeneration().get(refCon)
-						.getReferenceNodeNumber();
-				newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
-						NodeGeneType.HIDDEN);
-			} catch (NoSuchElementException e) {
-				newNodeGene = pool.constructRandomNodeGene(genome, NodeGeneType.HIDDEN);
-				pool.addLuckyConnectionGenesInThisGeneration(connectionGene, newNodeGene);
+				if(pool.getLuckyConnectionGenesInThisGeneration().keySet().stream().anyMatch(i -> connectionGene.getReferenceInnovationNumber()==i)) {
+					int referenceNodeNumber = pool.getLuckyConnectionGenesInThisGeneration().get(connectionGene.getReferenceInnovationNumber());
+					NodeGene newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceNodeNumber,
+							NodeGeneType.HIDDEN);
+					genome.addNode(newNodeGene);
+					// Now that the node is added. Lets make connections and also lets not forget to
+					// disable the prev connection
+					connectionGene.setEnabled(false);
+					ConnectionGene firstHalf = pool.constructConnectionGeneWithExistingInnovationNumber(pool.getInnovationNumber(connectionGene.getFromNode().getReferenceNodeNumber(), newNodeGene.getReferenceNodeNumber()), 1.0d, connectionGene.getFromNode(), newNodeGene);
+					ConnectionGene secondHalf = pool.constructConnectionGeneWithExistingInnovationNumber(pool.getInnovationNumber(newNodeGene.getReferenceNodeNumber(), connectionGene.getToNode().getReferenceNodeNumber()), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
+					genome.addConnection(firstHalf);
+					genome.addConnection(secondHalf);
+				} else {
+					NodeGene newNodeGene = pool.constructRandomNodeGene(NodeGeneType.HIDDEN);
+					pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber());
+					genome.addNode(newNodeGene);
+					// Now that the node is added. Lets make connections and also lets not forget to
+					// disable the prev connection
+					connectionGene.setEnabled(false);
+					ConnectionGene firstHalf = pool.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(),
+							newNodeGene, 1.0d);
+					ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
+							connectionGene.getToNode(), connectionGene.getWeight());
+					genome.addConnection(firstHalf);
+					genome.addConnection(secondHalf);
+				}
+			}catch(NoSuchElementException e) {
+				//TODO: This needs to be looked into. Incase that genome is long dead. we can now create a new connection entry and genome
+				NodeGene newNodeGene = pool.constructRandomNodeGene(NodeGeneType.HIDDEN);
+				pool.addLuckyConnectionGenesInThisGeneration(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber());
+				genome.addNode(newNodeGene);
+				// Now that the node is added. Lets make connections and also lets not forget to
+				// disable the prev connection
+				connectionGene.setEnabled(false);
+				ConnectionGene firstHalf = pool.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(),
+						newNodeGene, 1.0d);
+				ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
+						connectionGene.getToNode(), connectionGene.getWeight());
+				genome.addConnection(firstHalf);
+				genome.addConnection(secondHalf);
 			}
-			genome.addNode(newNodeGene);
 
-			// Now that the node is added. Lets make connections and also lets not forget to
-			// disable the prev connection
-			connectionGene.setEnabled(false);
-			ConnectionGene firstHalf = pool.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(),
-					newNodeGene, 1.0d);
-			ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
-					connectionGene.getToNode(), connectionGene.getWeight());
-
-			genome.addConnection(firstHalf);
-			genome.addConnection(secondHalf);
 		}
 	}
 
+	//TODO: I donno why but sometimes i see two connections with different innovation numbers for the same set of from and to nodes
 	private void mutationAddConnectionGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection

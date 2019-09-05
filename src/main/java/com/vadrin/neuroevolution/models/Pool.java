@@ -27,8 +27,8 @@ public class Pool {
 	private static final int NUMBER_OF_CHAMPIONS_TO_BE_LEFT_UNHARMED_IN_EACH_SPECIES = 1;
 	private static final int MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED = 5;
 
-	// TODO: Can we come up with a better way to solve this problem
-	private Map<ConnectionGene, NodeGene> luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
+	// TODO: this name needs to be changed. Its the map of innovationnumber to nodereferencenumbers which got mutated so far.
+	private Map<Integer, Integer> luckyConnectionGenesInThisGeneration = new HashMap<Integer, Integer>();
 
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
@@ -102,10 +102,6 @@ public class Pool {
 		return constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber, type);
 	}
 
-	public NodeGene constructRandomNodeGene(Genome genome, NodeGeneType type) {
-		return constructRandomNodeGene(type);
-	}
-
 	public void constructRandomGenomePool(int inputNodesSize, int outputNodesSize) {
 		// TODO: Somehow i need to add the bias node here... it wont be coming as part
 		// of inputs array but still ill need to acomodate. Read the comments on the
@@ -174,8 +170,8 @@ public class Pool {
 			Iterator<ConnectionGene> allConnections = thisGenome.getConnectionGenesSorted().iterator();
 			while (allConnections.hasNext()) {
 				ConnectionGene thisConnection = allConnections.next();
-				if (thisConnection.getFromNode().getReferenceNodeNumber() == thisConnection.getToNode()
-						.getReferenceNodeNumber()) {
+				if (thisConnection.getFromNode().getReferenceNodeNumber() == fromReferenceNodeNumber && thisConnection.getToNode()
+						.getReferenceNodeNumber() == toReferenceNodeNumber) {
 					return thisConnection.getReferenceInnovationNumber();
 				}
 			}
@@ -321,16 +317,12 @@ public class Pool {
 		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
 	}
 
-	public Map<ConnectionGene, NodeGene> getLuckyConnectionGenesInThisGeneration() {
+	public Map<Integer, Integer> getLuckyConnectionGenesInThisGeneration() {
 		return luckyConnectionGenesInThisGeneration;
 	}
 
-	public void clearLuckyConnectionGenesInThisGeneration() {
-		luckyConnectionGenesInThisGeneration = new HashMap<ConnectionGene, NodeGene>();
-	}
-
-	public void addLuckyConnectionGenesInThisGeneration(ConnectionGene connectionGene, NodeGene newNodeGene) {
-		luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
+	public void addLuckyConnectionGenesInThisGeneration(Integer referenceInnovationNumber, Integer referenceNodeNumber) {
+		luckyConnectionGenesInThisGeneration.put(referenceInnovationNumber, referenceNodeNumber);
 	}
 	
 	public List<Genome> getSortedGenomes() {
