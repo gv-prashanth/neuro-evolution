@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -330,5 +331,22 @@ public class Pool {
 
 	public void addLuckyConnectionGenesInThisGeneration(ConnectionGene connectionGene, NodeGene newNodeGene) {
 		luckyConnectionGenesInThisGeneration.put(connectionGene, newNodeGene);
+	}
+	
+	public List<Genome> getSortedGenomes() {
+		return getGenomes().stream()
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
+				.collect(Collectors.toList());
+	}
+
+	public String getNodesMap() {
+		Map<Integer, Integer> nodesMap = new HashMap<Integer, Integer>();
+		getSortedGenomes().forEach(g -> {
+			nodesMap.put(g.getNodeGenesSorted().size(),
+					nodesMap.containsKey(g.getNodeGenesSorted().size())
+							? nodesMap.get(g.getNodeGenesSorted().size()) + 1
+							: 1);
+		});
+		return nodesMap.toString();
 	}
 }
