@@ -9,7 +9,7 @@ public class SelectionService {
 
 	protected static final double FRACTION_OF_TOTAL_POPULATION_RESULTING_FROM_MUTATION_ALONE = 0.25d; // 0.25 MEANS 25%
 
-	public void select(Pool pool) {
+	protected void select(Pool pool) {
 		// sort within each species
 		// Pick the top X
 		// and DELETE the others

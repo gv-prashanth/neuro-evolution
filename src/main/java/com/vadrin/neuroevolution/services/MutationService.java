@@ -30,7 +30,7 @@ public class MutationService {
 	public static final double X_RANDOM_WEIGHT_LOWER_BOUND = -40d;
 	public static final double X_RANDOM_WEIGHT_UPPER_BOUND = 40d;
 
-	public void mutate(Pool pool) {
+	protected void mutate(Pool pool) {
 		Iterator<Genome> genomeI = pool.getGenomes().iterator();
 		while (genomeI.hasNext()) {
 			Genome genome = genomeI.next();

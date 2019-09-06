@@ -22,7 +22,7 @@ public class CrossOverService {
 	private static final double CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS = 0.75d; // 0.75 MEANS 75%
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
-	public void crossOver(Pool pool) {
+	protected void crossOver(Pool pool) {
 		//System.out.println("pop before crossover " + pool.getGenomes().size());
 
 		// Inter species mating

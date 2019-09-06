@@ -19,7 +19,7 @@ public class SpeciationService {
 	private static final double C3 = 0.4d;
 	private static final double DELTAT = 3.0d;
 
-	public void speciate(Pool pool) {
+	protected void speciate(Pool pool) {
 		Iterator<Genome> iterator = pool.getGenomes().iterator();
 		if (iterator.hasNext()) {
 			Genome firstGenome = iterator.next();

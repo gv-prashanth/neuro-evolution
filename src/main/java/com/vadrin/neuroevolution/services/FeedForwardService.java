@@ -14,7 +14,7 @@ import com.vadrin.neuroevolution.models.exceptions.InvalidInputException;
 @Service
 public class FeedForwardService {
 
-	public double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
+	protected double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
 		if (genome.getNodeGenesSorted(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
