@@ -17,7 +17,7 @@ public class Genome {
 	private int birthGeneration;
 	private Map<Integer, Double> fitnessLog;
 
-	public Genome(Set<NodeGene> nodeGenes, Set<ConnectionGene> connectionGenes, int birthGeneration) {
+	protected Genome(Set<NodeGene> nodeGenes, Set<ConnectionGene> connectionGenes, int birthGeneration) {
 		super();
 		this.nodeGenes = nodeGenes;
 		this.connectionGenes = connectionGenes;
@@ -35,8 +35,6 @@ public class Genome {
 	public Map<Integer, Double> getFitnessLog() {
 		return fitnessLog;
 	}
-
-
 
 	public int getBirthGeneration() {
 		return birthGeneration;

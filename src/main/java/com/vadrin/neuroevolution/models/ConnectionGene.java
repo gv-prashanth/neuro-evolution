@@ -28,7 +28,7 @@ public class ConnectionGene extends Gene {
 		return toNode;
 	}
 
-	public ConnectionGene(double weight, boolean enabled, NodeGene fromNode, NodeGene toNode,
+	protected ConnectionGene(double weight, boolean enabled, NodeGene fromNode, NodeGene toNode,
 			int referenceInnovationNumber) {
 		super();
 		this.weight = weight;

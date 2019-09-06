@@ -10,7 +10,7 @@ public abstract class Gene {
 		return (Math.random() < chance);
 	}
 
-	public Gene() {
+	protected Gene() {
 		super();
 		this.id = UUID.randomUUID().toString();
 	}

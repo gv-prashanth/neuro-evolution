@@ -14,7 +14,7 @@ public class NodeGene extends Gene {
 		return referenceNodeNumber;
 	}
 
-	public NodeGene(int referenceNodeKey, NodeGeneType type) {
+	protected NodeGene(int referenceNodeKey, NodeGeneType type) {
 		super();
 		this.referenceNodeNumber = referenceNodeKey;
 		this.type = type;

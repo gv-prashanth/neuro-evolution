@@ -23,7 +23,7 @@ public class InnovationInformation {
 		return createdToReferenceInnovationNumber;
 	}
 
-	public InnovationInformation(int referenceInnovationNumber, int createdReferenceNodeNumber,
+	protected InnovationInformation(int referenceInnovationNumber, int createdReferenceNodeNumber,
 			int createdFromReferenceInnovationNumber, int createdToReferenceInnovationNumber) {
 		super();
 		this.referenceInnovationNumber = referenceInnovationNumber;
