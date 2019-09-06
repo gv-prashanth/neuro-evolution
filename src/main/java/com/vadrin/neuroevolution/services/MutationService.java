@@ -92,7 +92,6 @@ public class MutationService {
 		});
 	}
 
-	//TODO: I donno why. But i see stale nodes/ nodes which arnt reaching output node.
 	private void mutationAddNodeGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
@@ -133,7 +132,6 @@ public class MutationService {
 		}
 	}
 
-	//TODO: I donno why but sometimes i see two connections with different innovation numbers for the same set of from and to nodes
 	private void mutationAddConnectionGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection

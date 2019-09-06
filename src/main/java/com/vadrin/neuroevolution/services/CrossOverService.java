@@ -145,7 +145,7 @@ public class CrossOverService {
 			}
 			if ((ConnectionGeneMostlyEmpty1[i] == null && ConnectionGeneMostlyEmpty2[i] != null)
 					|| (ConnectionGeneMostlyEmpty2[i] == null && ConnectionGeneMostlyEmpty1[i] != null)) {
-				if (i < connectionGene1MaxInnovationNumber) {
+				if (i <= connectionGene1MaxInnovationNumber) {
 					// disjoing genes
 					if (ConnectionGeneMostlyEmpty1[i] != null) {
 						sampleConnectionGenes.add(ConnectionGeneMostlyEmpty1[i]);
