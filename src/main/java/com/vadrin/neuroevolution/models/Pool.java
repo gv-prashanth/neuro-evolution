@@ -16,9 +16,7 @@ import com.vadrin.neuroevolution.services.MutationService;
 public class Pool {
 
 	private final int poolCapacity;
-	private Set<NodeGene> nodeGenesPool;
-	private Set<ConnectionGene> connectionGenesPool;
-	private Set<Genome> genomesPool;
+	private Set<Genome> genomes;
 	private int referenceNodeCounter;
 	private int referenceInnovationCounter;
 	private int referenceGenerationCounter;
@@ -31,9 +29,7 @@ public class Pool {
 	public Pool(int poolCapacity, int inputNodesSize, int outputNodesSize) {
 		super();
 		this.poolCapacity = poolCapacity;
-		this.nodeGenesPool = new HashSet<NodeGene>();
-		this.connectionGenesPool = new HashSet<ConnectionGene>();
-		this.genomesPool = new HashSet<Genome>();
+		this.genomes = new HashSet<Genome>();
 		this.referenceNodeCounter = 0;
 		this.referenceInnovationCounter = 0;
 		this.referenceGenerationCounter = 0;
@@ -84,16 +80,16 @@ public class Pool {
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes, referenceGenerationCounter);
-		genomesPool.add(toReturn);
+		genomes.add(toReturn);
 		return toReturn;
 	}
 
 	public Collection<Genome> getGenomes() {
-		return genomesPool;
+		return genomes;
 	}
 
 	public void killGenome(Genome genome) {
-		genomesPool.remove(genome);
+		genomes.remove(genome);
 	}
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
@@ -139,25 +135,25 @@ public class Pool {
 		}
 		inputNodeGenes.addAll(outputNodeGenes);
 		Genome genome = new Genome(inputNodeGenes, connectionGenes, referenceGenerationCounter);
-		genomesPool.add(genome);
+		genomes.add(genome);
 		return genome;
 	}
 
 	private Genome constructCopyGenome(Genome oriGenome) {
 		Genome copyGenome = constructGenomeFromSampleConnectionGenes(
 				oriGenome.getConnectionGenesSorted().stream().collect(Collectors.toSet()));
-		genomesPool.add(copyGenome);
+		genomes.add(copyGenome);
 		return copyGenome;
 	}
 
 	public Genome getGenomeHavingConnection(String connectionId) {
-		return genomesPool.stream().filter(
+		return genomes.stream().filter(
 				g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
 				.findFirst().get();
 	}
 
 	public Genome getGenomeHavingNode(String nodeId) {
-		return genomesPool.stream()
+		return genomes.stream()
 				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId)))
 				.findFirst().get();
 	}
@@ -182,13 +178,11 @@ public class Pool {
 	public NodeGene constructRandomNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
-		nodeGenesPool.add(toReturn);
 		return toReturn;
 	}
 
 	public NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
-		nodeGenesPool.add(toReturn);
 		return toReturn;
 	}
 
@@ -203,7 +197,6 @@ public class Pool {
 		referenceInnovationCounter++;
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
 				referenceInnovationCounter);
-		connectionGenesPool.add(toReturn);
 		return toReturn;
 	}
 
@@ -211,7 +204,6 @@ public class Pool {
 	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
 			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
-		connectionGenesPool.add(toReturn);
 		return toReturn;
 	}
 
@@ -316,7 +308,7 @@ public class Pool {
 	}
 
 	public Genome getGenome(String gid) {
-		return genomesPool.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
+		return genomes.stream().filter(g -> g.getId().equalsIgnoreCase(gid)).findFirst().get();
 	}
 
 	public Set<InnovationInformation> getInnovationInformation() {
