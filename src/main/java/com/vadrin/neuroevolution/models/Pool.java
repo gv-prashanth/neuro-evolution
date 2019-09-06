@@ -1,6 +1,5 @@
 package com.vadrin.neuroevolution.models;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,10 +34,17 @@ public class Pool {
 		this.referenceGenerationCounter = 0;
 		this.innovationInformation = new HashSet<InnovationInformation>();
 		startNewGeneration();
-		constructRandomGenomePool(inputNodesSize, outputNodesSize);
+		// TODO: Somehow i need to add the bias node here... it wont be coming as part
+		// of inputs array but still ill need to acomodate. Read the comments on the
+		// mutate method regarding the bias nodes.
+		Genome firstRandomGenome = constructGenome(inputNodesSize, outputNodesSize);
+		for (int i = 1; i < poolCapacity; i++) {
+			constructGenome(firstRandomGenome);
+		}
 	}
 
-	public Genome constructGenomeFromSampleConnectionGenes(Set<ConnectionGene> sampleConnectionGenes) {
+	//FromSampleConnectionGenes
+	public Genome constructGenome(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
 		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();
 
@@ -55,7 +61,7 @@ public class Pool {
 				constructedNodeGeneOfFrom = actualNodeGenes.stream()
 						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfFrom).findFirst().get();
 			} else {
-				constructedNodeGeneOfFrom = constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfFrom,
+				constructedNodeGeneOfFrom = constructNodeGene(sampleRefNumberOfFrom,
 						sampleTypeOfFrom);
 				actualNodeGenes.add(constructedNodeGeneOfFrom);
 			}
@@ -65,7 +71,7 @@ public class Pool {
 				constructedNodeGeneOfTo = actualNodeGenes.stream()
 						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfTo).findFirst().get();
 			} else {
-				constructedNodeGeneOfTo = constructNodeGeneWithReferenceNodeNumber(sampleRefNumberOfTo, sampleTypeOfTo);
+				constructedNodeGeneOfTo = constructNodeGene(sampleRefNumberOfTo, sampleTypeOfTo);
 				actualNodeGenes.add(constructedNodeGeneOfTo);
 			}
 		}
@@ -76,7 +82,7 @@ public class Pool {
 			NodeGene toNodeGene = actualNodeGenes.stream()
 					.filter(n -> n.getReferenceNodeNumber() == sampleConn.getToNode().getReferenceNodeNumber())
 					.findFirst().get();
-			actualConnectionGenes.add(constructConnectionGeneWithExistingInnovationNumber(
+			actualConnectionGenes.add(constructConnectionGene(
 					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes, referenceGenerationCounter);
@@ -84,42 +90,30 @@ public class Pool {
 		return toReturn;
 	}
 
-	public Collection<Genome> getGenomes() {
-		return genomes;
-	}
-
 	public void killGenome(Genome genome) {
 		genomes.remove(genome);
 	}
 
-	public NodeGene constructNodeGeneWithReferenceNodeNumber(Genome genome, int referenceNodeNumber,
+	//WithReferenceNodeNumber
+	public NodeGene constructNodeGene(Genome genome, int referenceNodeNumber,
 			NodeGeneType type) {
-		return constructNodeGeneWithReferenceNodeNumber(referenceNodeNumber, type);
-	}
-
-	public void constructRandomGenomePool(int inputNodesSize, int outputNodesSize) {
-		// TODO: Somehow i need to add the bias node here... it wont be coming as part
-		// of inputs array but still ill need to acomodate. Read the comments on the
-		// mutate method regarding the bias nodes.
-		Genome firstRandomGenome = constructRandomGenome(inputNodesSize, outputNodesSize);
-		for (int i = 1; i < poolCapacity; i++) {
-			constructCopyGenome(firstRandomGenome);
-		}
+		return constructNodeGene(referenceNodeNumber, type);
 	}
 
 	public void startNewGeneration() {
-		getGenomes().forEach(g -> g.addFitnessLog(referenceGenerationCounter));
+		genomes.forEach(g -> g.addFitnessLog(referenceGenerationCounter));
 		referenceGenerationCounter++;
 	}
 
-	private Genome constructRandomGenome(int inputNodesSize, int outputNodesSize) {
+	//Random
+	private Genome constructGenome(int inputNodesSize, int outputNodesSize) {
 		Set<NodeGene> inputNodeGenes = new HashSet<NodeGene>();
 		Set<NodeGene> outputNodeGenes = new HashSet<NodeGene>();
 		for (int j = 0; j < inputNodesSize; j++) {
-			inputNodeGenes.add(constructRandomNodeGene(NodeGeneType.INPUT));
+			inputNodeGenes.add(constructNodeGene(NodeGeneType.INPUT));
 		}
 		for (int j = 0; j < outputNodesSize; j++) {
-			outputNodeGenes.add(constructRandomNodeGene(NodeGeneType.OUTPUT));
+			outputNodeGenes.add(constructNodeGene(NodeGeneType.OUTPUT));
 		}
 		// Instatiate Empty Connection Genes
 		Set<ConnectionGene> connectionGenes = new HashSet<ConnectionGene>();
@@ -129,7 +123,7 @@ public class Pool {
 			Iterator<NodeGene> oitr = outputNodeGenes.stream().iterator();
 			while (oitr.hasNext()) {
 				NodeGene out = oitr.next();
-				connectionGenes.add(constructConnectionGeneWithNewInnovationNumber(in, out));
+				connectionGenes.add(constructConnectionGene(in, out));
 			}
 			;
 		}
@@ -139,28 +133,17 @@ public class Pool {
 		return genome;
 	}
 
-	private Genome constructCopyGenome(Genome oriGenome) {
-		Genome copyGenome = constructGenomeFromSampleConnectionGenes(
+	//Copy
+	private Genome constructGenome(Genome oriGenome) {
+		Genome copyGenome = constructGenome(
 				oriGenome.getConnectionGenesSorted().stream().collect(Collectors.toSet()));
 		genomes.add(copyGenome);
 		return copyGenome;
 	}
 
-	public Genome getGenomeHavingConnection(String connectionId) {
-		return genomes.stream().filter(
-				g -> g.getConnectionGenesSorted().stream().anyMatch(c -> c.getId().equalsIgnoreCase(connectionId)))
-				.findFirst().get();
-	}
-
-	public Genome getGenomeHavingNode(String nodeId) {
-		return genomes.stream()
-				.filter(g -> g.getNodeGenesSorted().stream().anyMatch(n -> n.getId().equalsIgnoreCase(nodeId)))
-				.findFirst().get();
-	}
-
 	//TODO: This needs to be removed. it wont always give valid answers
 	public int getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(int fromReferenceNodeNumber, int toReferenceNodeNumber) {
-		Iterator<Genome> allGenomes = this.getGenomes().iterator();
+		Iterator<Genome> allGenomes = this.genomes.iterator();
 		while (allGenomes.hasNext()) {
 			Genome thisGenome = allGenomes.next();
 			Iterator<ConnectionGene> allConnections = thisGenome.getConnectionGenesSorted().iterator();
@@ -175,24 +158,28 @@ public class Pool {
 		throw new NoSuchElementException();
 	}
 
-	public NodeGene constructRandomNodeGene(NodeGeneType type) {
+	//Random
+	public NodeGene constructNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
 		return toReturn;
 	}
 
-	public NodeGene constructNodeGeneWithReferenceNodeNumber(int referenceNodeNumber, NodeGeneType type) {
+	//WithReferenceNodeNumber
+	public NodeGene constructNodeGene(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
 		return toReturn;
 	}
 
-	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene) {
-		return constructConnectionGeneWithNewInnovationNumber(fromNodeGene, toNodeGene, MathService.randomNumber(
+	//WithNewInnovationNumber
+	public ConnectionGene constructConnectionGene(NodeGene fromNodeGene, NodeGene toNodeGene) {
+		return constructConnectionGene(fromNodeGene, toNodeGene, MathService.randomNumber(
 				MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
 	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
-	public ConnectionGene constructConnectionGeneWithNewInnovationNumber(NodeGene fromNodeGene, NodeGene toNodeGene,
+	//WithNewInnovationNumber
+	public ConnectionGene constructConnectionGene(NodeGene fromNodeGene, NodeGene toNodeGene,
 			double weight) {
 		referenceInnovationCounter++;
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
@@ -201,15 +188,17 @@ public class Pool {
 	}
 
 	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
-	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+	//WithExistingInnovationNumber
+	public ConnectionGene constructConnectionGene(int referenceInnovationNumber,
 			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
 		return toReturn;
 	}
 
-	public ConnectionGene constructConnectionGeneWithExistingInnovationNumber(int referenceInnovationNumber,
+	//WithExistingInnovationNumber
+	public ConnectionGene constructConnectionGene(int referenceInnovationNumber,
 			NodeGene fromNodeGene, NodeGene toNodeGene) {
-		return constructConnectionGeneWithExistingInnovationNumber(referenceInnovationNumber, MathService
+		return constructConnectionGene(referenceInnovationNumber, MathService
 				.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND),
 				fromNodeGene, toNodeGene);
 	}
@@ -223,13 +212,13 @@ public class Pool {
 	}
 
 	public Genome getReferenceGenomeOfSpeciesId(String speciesId) {
-		return getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId)).findFirst()
+		return genomes.stream().filter(g -> g.getReferenceSpeciesNumber()!=null && g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId)).findFirst()
 				.get();
 	}
 
 	public Set<String> getSpeciesIds() {
 		Set<String> toReturn = new HashSet<String>();
-		getGenomes().forEach(g -> {
+		genomes.forEach(g -> {
 			if (g.getReferenceSpeciesNumber() != null)
 				toReturn.add(g.getReferenceSpeciesNumber());
 		});
@@ -238,30 +227,30 @@ public class Pool {
 
 	public Genome getRandomGenomeOfThisSpecies(String thisSpeciesId) {
 		int randomPos = (int) MathService.randomNumber(0, getNumberOfGenomesInSpecies(thisSpeciesId) - 1);
-		return getGenomes().stream()
+		return genomes.stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).skip(randomPos)
 				.findFirst().get();
 	}
 
 	public int getNumberOfGenomesInSpecies(String thisSpeciesId) {
-		return (int) getGenomes().stream()
+		return (int) genomes.stream()
 				.filter(genome -> genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).count();
 	}
 
 	public void extinctThisSpeciesAlsoKillOfAnyRemainingGenomes(String thisSpeciesId) {
 		Set<Genome> genomesToKill = new HashSet<Genome>();
-		getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+		genomes.stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 				.forEach(g -> genomesToKill.add(g));
 		genomesToKill.forEach(g -> killGenome(g));
 	}
 
 	public Genome getMaxFitGenomeOfThisSpecies(String thisSpeciesId) {
-		return getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+		return genomes.stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
 	}
 
 	public Set<Genome> getAllGenomesOfThisSpecies(String speciesId) {
-		return getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
+		return genomes.stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(speciesId))
 				.collect(Collectors.toSet());
 	}
 
@@ -290,14 +279,14 @@ public class Pool {
 		Set<String> toReturn = new HashSet<String>();
 
 		// Pick top one in the overall pool
-		getGenomes().stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
+		genomes.stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
 				.forEachOrdered(g -> toReturn.add(g.getId()));
 
 		// Pick top in each species
 		getSpeciesIds().stream().forEach(s -> {
 			if (getNumberOfGenomesInSpecies(
 					s) > MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED) {
-				getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(s))
+				genomes.stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(s))
 						.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 						.limit(NUMBER_OF_CHAMPIONS_TO_BE_LEFT_UNHARMED_IN_EACH_SPECIES)
 						.forEachOrdered(g -> toReturn.add(g.getId()));
@@ -319,15 +308,15 @@ public class Pool {
 		innovationInformation.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber, createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
 	}
 	
-	public List<Genome> getSortedGenomes() {
-		return getGenomes().stream()
+	public List<Genome> getGenomes() {
+		return genomes.stream()
 				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.collect(Collectors.toList());
 	}
 
 	public String getNodesMap() {
 		Map<Integer, Integer> nodesMap = new HashMap<Integer, Integer>();
-		getSortedGenomes().forEach(g -> {
+		genomes.forEach(g -> {
 			nodesMap.put(g.getNodeGenesSorted().size(),
 					nodesMap.containsKey(g.getNodeGenesSorted().size())
 							? nodesMap.get(g.getNodeGenesSorted().size()) + 1

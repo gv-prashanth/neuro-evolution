@@ -101,14 +101,14 @@ public class MutationService {
 			if(pool.getInnovationInformation().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
 				InnovationInformation referenceInnovationInformation = pool.getInnovationInformation().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
 				if(!genome.getNodeGenesSorted().stream().anyMatch(n -> n.getReferenceNodeNumber()==referenceInnovationInformation.getCreatedReferenceNodeNumber())) {
-					NodeGene newNodeGene = pool.constructNodeGeneWithReferenceNodeNumber(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
+					NodeGene newNodeGene = pool.constructNodeGene(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
 							NodeGeneType.HIDDEN);
 					genome.addNode(newNodeGene);
 					// Now that the node is added. Lets make connections and also lets not forget to
 					// disable the prev connection
 					connectionGene.setEnabled(false);
-					ConnectionGene firstHalf = pool.constructConnectionGeneWithExistingInnovationNumber(referenceInnovationInformation.getCreatedFromReferenceInnovationNumber(), 1.0d, connectionGene.getFromNode(), newNodeGene);
-					ConnectionGene secondHalf = pool.constructConnectionGeneWithExistingInnovationNumber(referenceInnovationInformation.getCreatedToReferenceInnovationNumber(), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
+					ConnectionGene firstHalf = pool.constructConnectionGene(referenceInnovationInformation.getCreatedFromReferenceInnovationNumber(), 1.0d, connectionGene.getFromNode(), newNodeGene);
+					ConnectionGene secondHalf = pool.constructConnectionGene(referenceInnovationInformation.getCreatedToReferenceInnovationNumber(), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
 					genome.addConnection(firstHalf);
 					genome.addConnection(secondHalf);	
 				}else {
@@ -116,14 +116,14 @@ public class MutationService {
 					System.out.println("THIS CONNECTION IS ALREADY MUTATED IN GENOME "+genome.getId()+" CANT MUTATE AGAIN. WHAT TO DO NOW?");
 				}
 			} else {
-				NodeGene newNodeGene = pool.constructRandomNodeGene(NodeGeneType.HIDDEN);
+				NodeGene newNodeGene = pool.constructNodeGene(NodeGeneType.HIDDEN);
 				genome.addNode(newNodeGene);
 				// Now that the node is added. Lets make connections and also lets not forget to
 				// disable the prev connection
 				connectionGene.setEnabled(false);
-				ConnectionGene firstHalf = pool.constructConnectionGeneWithNewInnovationNumber(connectionGene.getFromNode(),
+				ConnectionGene firstHalf = pool.constructConnectionGene(connectionGene.getFromNode(),
 						newNodeGene, 1.0d);
-				ConnectionGene secondHalf = pool.constructConnectionGeneWithNewInnovationNumber(newNodeGene,
+				ConnectionGene secondHalf = pool.constructConnectionGene(newNodeGene,
 						connectionGene.getToNode(), connectionGene.getWeight());
 				genome.addConnection(firstHalf);
 				genome.addConnection(secondHalf);
@@ -165,11 +165,11 @@ public class MutationService {
 				if (!genome.isConnectionPresentBetweenNodes(from.getId(), to.getId())) {
 					ConnectionGene toAdd = null;
 					try {
-						toAdd = pool.constructConnectionGeneWithExistingInnovationNumber(
+						toAdd = pool.constructConnectionGene(
 								pool.getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
 								from, to);
 					} catch (NoSuchElementException e) {
-						toAdd = pool.constructConnectionGeneWithNewInnovationNumber(from, to);
+						toAdd = pool.constructConnectionGene(from, to);
 					}
 					genome.addConnection(toAdd);
 				}

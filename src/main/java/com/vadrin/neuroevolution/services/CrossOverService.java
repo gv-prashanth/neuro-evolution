@@ -161,7 +161,7 @@ public class CrossOverService {
 				}
 			}
 		}
-		Genome toReturn = pool.constructGenomeFromSampleConnectionGenes(sampleConnectionGenes);
+		Genome toReturn = pool.constructGenome(sampleConnectionGenes);
 
 		// Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS
 		// logic
