@@ -31,12 +31,10 @@ public class SelectionService {
 				pool.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 						.forEach(g -> pool.killGenome(g));
 			} else {
-				pool.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				pool.getGenomes(thisSpeciesId).stream()
 						.sorted((a, b) -> Double.compare(a.getFitnessScore(), b.getFitnessScore()))
 						.limit((long) ((1 - fractionOfChampionsToSelectInThisSpecies(thisSpeciesId))
-								* (pool.getGenomes().stream()
-										.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)))
-												.count()))
+								* (pool.getGenomes(thisSpeciesId).size())))
 						.forEach(toDel -> pool.killGenome(toDel));
 			}
 		});

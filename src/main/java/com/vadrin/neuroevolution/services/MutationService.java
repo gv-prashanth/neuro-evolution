@@ -125,8 +125,6 @@ public class MutationService {
 				} else {
 					// TODO: This needs to be handled. may be try another connection? or lets not
 					// even mutate this genome? need to take a call
-					System.out.println("THIS CONNECTION IS ALREADY MUTATED IN GENOME " + genome.getId()
-							+ " CANT MUTATE AGAIN. WHAT TO DO NOW?");
 				}
 			} else {
 				NodeGene newNodeGene = pool.constructNodeGene(NodeGeneType.HIDDEN);
