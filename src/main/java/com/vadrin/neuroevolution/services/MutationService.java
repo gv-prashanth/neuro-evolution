@@ -40,7 +40,9 @@ public class MutationService {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy
-				if (!pool.championsWhoShouldntBeHarmed().stream().anyMatch(m -> genome.getId().equalsIgnoreCase(m))) {
+				Genome bestGenomeInPool = pool.getGenomes().stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
+						.findFirst().get();
+				if (!genome.getId().equalsIgnoreCase(bestGenomeInPool.getId())) {
 					Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 							.iterator();
 					while (mTypeI.hasNext()) {
@@ -70,7 +72,7 @@ public class MutationService {
 	}
 
 	private void mutationEnableDisableConnectionGene(Genome genome) {
-		genome.getConnectionGenesSorted().forEach(connectionGene -> {
+		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(X_CHANCE_FOR_TOGGLING_GENOME_ENABLE_FLAG)) {
 				connectionGene.setEnabled(!connectionGene.isEnabled());
 			}
@@ -78,7 +80,7 @@ public class MutationService {
 	}
 
 	private void mutationAlterWeightOfConnectionGene(Genome genome) {
-		genome.getConnectionGenesSorted().forEach(connectionGene -> {
+		genome.getConnectionGenes().forEach(connectionGene -> {
 			if (connectionGene.isLucky(CHANCE_FOR_WEIGHT_MUTATION)) {
 				if (connectionGene.isLucky(IF_WEIGHT_MUTATION_THEN_CHANCE_FOR_RANDOM_WEIGHT)) {
 					connectionGene.setWeight(
@@ -95,12 +97,12 @@ public class MutationService {
 	private void mutationAddNodeGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_NODE) {
 			// This genome will get a new node gene
-			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenesSorted().size());
+			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenes().size());
 			// select a random connection gene to add the node in between
-			ConnectionGene connectionGene = genome.getConnectionGenesSorted().get(randomConn);
+			ConnectionGene connectionGene = genome.getConnectionGenes().get(randomConn);
 			if(pool.getInnovationInformation().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
 				InnovationInformation referenceInnovationInformation = pool.getInnovationInformation().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
-				if(!genome.getNodeGenesSorted().stream().anyMatch(n -> n.getReferenceNodeNumber()==referenceInnovationInformation.getCreatedReferenceNodeNumber())) {
+				if(!genome.getNodeGenes().stream().anyMatch(n -> n.getReferenceNodeNumber()==referenceInnovationInformation.getCreatedReferenceNodeNumber())) {
 					NodeGene newNodeGene = pool.constructNodeGene(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
 							NodeGeneType.HIDDEN);
 					genome.addNode(newNodeGene);
@@ -135,20 +137,20 @@ public class MutationService {
 	private void mutationAddConnectionGene(Pool pool, Genome genome) {
 		if (MathService.randomNumber(0d, 1d) < CHANCE_FOR_ADDING_NEW_CONNECTION) {
 			// this genome will get a new connection
-			int randNodePos1 = (int) MathService.randomNumber(0d, genome.getNodeGenesSorted().size());
-			NodeGene n1 = genome.getNodeGenesSorted().get(randNodePos1);
+			int randNodePos1 = (int) MathService.randomNumber(0d, genome.getNodeGenes().size());
+			NodeGene n1 = genome.getNodeGenes().get(randNodePos1);
 			NodeGene n2 = null;
 			try {
 				Set<Integer> allNumbers = new HashSet<Integer>();
-				for (int i = 0; i < genome.getNodeGenesSorted().size(); i++) {
+				for (int i = 0; i < genome.getNodeGenes().size(); i++) {
 					allNumbers.add(i);
 				}
 				int randNodePos2 = allNumbers.stream().filter(
-						i -> i != randNodePos1 && ((n1.getType() != genome.getNodeGenesSorted().get(i).getType())
-								|| (n1.getType() == genome.getNodeGenesSorted().get(i).getType()
+						i -> i != randNodePos1 && ((n1.getType() != genome.getNodeGenes().get(i).getType())
+								|| (n1.getType() == genome.getNodeGenes().get(i).getType()
 										&& n1.getType() == NodeGeneType.HIDDEN)))
 						.findAny().get();
-				n2 = genome.getNodeGenesSorted().get(randNodePos2);
+				n2 = genome.getNodeGenes().get(randNodePos2);
 			} catch (NoSuchElementException e) {
 				// happens very rarely only when nodes are two or three so its fine
 				return;
@@ -166,7 +168,7 @@ public class MutationService {
 					ConnectionGene toAdd = null;
 					try {
 						toAdd = pool.constructConnectionGene(
-								pool.getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
+								getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(pool, from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
 								from, to);
 					} catch (NoSuchElementException e) {
 						toAdd = pool.constructConnectionGene(from, to);
@@ -176,5 +178,22 @@ public class MutationService {
 			}
 		}
 	}
-
+	
+	//TODO: This needs to be removed. it wont always give valid answers
+	private int getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(Pool pool, int fromReferenceNodeNumber, int toReferenceNodeNumber) {
+		Iterator<Genome> allGenomes = pool.getGenomes().iterator();
+		while (allGenomes.hasNext()) {
+			Genome thisGenome = allGenomes.next();
+			Iterator<ConnectionGene> allConnections = thisGenome.getConnectionGenes().iterator();
+			while (allConnections.hasNext()) {
+				ConnectionGene thisConnection = allConnections.next();
+				if (thisConnection.getFromNode().getReferenceNodeNumber() == fromReferenceNodeNumber && thisConnection.getToNode()
+						.getReferenceNodeNumber() == toReferenceNodeNumber) {
+					return thisConnection.getReferenceInnovationNumber();
+				}
+			}
+		}
+		throw new NoSuchElementException();
+	}
+	
 }

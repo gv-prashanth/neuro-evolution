@@ -51,15 +51,15 @@ public class CrossOverService {
 		//System.out.println("pop after inter crossover " + pool.getGenomes().size());
 
 		// Intra species mating
-		pool.getSpeciesIds().forEach(thisSpeciesId -> {
+		pool.getSpecies().forEach(thisSpeciesId -> {
 			int speciesPopToReach = calculateSpeciesPopToReachForThisSpecies(pool, thisSpeciesId);
-			int i = pool.getNumberOfGenomesInSpecies(thisSpeciesId);
+			int i = pool.getGenomes(thisSpeciesId).size();
 			while (i < speciesPopToReach) {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
-				Genome parent1 = pool.getRandomGenomeOfThisSpecies(thisSpeciesId);
-				Genome parent2 = pool.getRandomGenomeOfThisSpecies(thisSpeciesId);
+				Genome parent1 = pool.getGenomes(thisSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst().get();
+				Genome parent2 = pool.getGenomes(thisSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst().get();
 				Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
 				i++;
@@ -67,13 +67,13 @@ public class CrossOverService {
 		});
 		//System.out.println("pop after intra crossover " + pool.getGenomes().size());
 		while (pool.getGenomes().size() < pool.getPoolCapacity()) {
-			int randomPos = (int) MathService.randomNumber(0, pool.getSpeciesIds().size() - 1);
-			String randomSpeciesId = pool.getSpeciesIds().stream().skip(randomPos).findAny().get();
+			int randomPos = (int) MathService.randomNumber(0, pool.getSpecies().size() - 1);
+			String randomSpeciesId = pool.getSpecies().stream().skip(randomPos).findAny().get();
 			// pick any two random genomes in this species
 			// and then cross over between them
 			// and then put them back in the pool with same speciesid
-			Genome parent1 = pool.getRandomGenomeOfThisSpecies(randomSpeciesId);
-			Genome parent2 = pool.getRandomGenomeOfThisSpecies(randomSpeciesId);
+			Genome parent1 = pool.getGenomes(randomSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst().get();
+			Genome parent2 = pool.getGenomes(randomSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst().get();
 			Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
 		}
@@ -83,7 +83,7 @@ public class CrossOverService {
 	//TODO: Need to visit this
 	private int calculateSpeciesPopToReachForThisSpecies(Pool pool, String thisSpeciesId) {
 		return (int) ((((double) pool.getPoolCapacity()) / pool.getGenomes().size())
-				* pool.getNumberOfGenomesInSpecies(thisSpeciesId));
+				* pool.getGenomes(thisSpeciesId).size());
 	}
 
 	private Genome constructGenomeByCrossingOver(Pool pool, final Genome genome1, final Genome genome2) {
@@ -92,8 +92,8 @@ public class CrossOverService {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;
 		}
-		List<ConnectionGene> connectionList1 = genome1.getConnectionGenesSorted();
-		List<ConnectionGene> connectionList2 = genome2.getConnectionGenesSorted();
+		List<ConnectionGene> connectionList1 = genome1.getConnectionGenes();
+		List<ConnectionGene> connectionList2 = genome2.getConnectionGenes();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[connectionList2.size()];
@@ -165,12 +165,12 @@ public class CrossOverService {
 
 		// Lets try to implement CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS
 		// logic
-		toReturn.getConnectionGenesSorted().forEach(c -> {
+		toReturn.getConnectionGenes().forEach(c -> {
 			try {
-				if (!genome1.getConnectionGenesSorted().stream()
+				if (!genome1.getConnectionGenes().stream()
 						.filter(g1c -> g1c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber())
 						.findFirst().get().isEnabled()
-						&& !genome2.getConnectionGenesSorted().stream()
+						&& !genome2.getConnectionGenes().stream()
 								.filter(g2c -> g2c.getReferenceInnovationNumber() == c.getReferenceInnovationNumber())
 								.findFirst().get().isEnabled()) {
 					if (c.isLucky(CHANCE_FOR_GENE_DISABLED_IF_DISABLED_IN_BOTH_PARENTS))

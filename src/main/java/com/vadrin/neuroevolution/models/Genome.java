@@ -68,19 +68,19 @@ public class Genome {
 		return nodeGenes.stream().filter(n -> n.getId().equalsIgnoreCase(id)).findFirst().get();
 	}
 
-	public List<NodeGene> getNodeGenesSorted(NodeGeneType type) {
+	public List<NodeGene> getNodeGenes(NodeGeneType type) {
 		return this.nodeGenes.stream().filter(nodeGen -> (nodeGen.getType() == type))
 				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber()))
 				.collect(Collectors.toList());
 	}
 
-	public List<NodeGene> getNodeGenesSorted() {
+	public List<NodeGene> getNodeGenes() {
 		return this.nodeGenes.stream()
 				.sorted((a, b) -> Integer.compare(a.getReferenceNodeNumber(), b.getReferenceNodeNumber()))
 				.collect(Collectors.toList());
 	}
 
-	public List<ConnectionGene> getConnectionGenesSorted() {
+	public List<ConnectionGene> getConnectionGenes() {
 		return this.connectionGenes.stream()
 				.sorted((a, b) -> Integer.compare(a.getReferenceInnovationNumber(), b.getReferenceInnovationNumber()))
 				.collect(Collectors.toList());

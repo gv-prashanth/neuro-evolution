@@ -28,10 +28,10 @@ public class SpeciationService {
 		while (iterator.hasNext()) {
 			Genome genome = iterator.next();
 			boolean notDone = true;
-			Iterator<String> speciesIterator = pool.getSpeciesIds().iterator();
+			Iterator<String> speciesIterator = pool.getSpecies().iterator();
 			while (speciesIterator.hasNext()) {
 				String thisSpeciesId = speciesIterator.next();
-				if (isSameSpecies(genome, pool.getReferenceGenomeOfSpeciesId(thisSpeciesId))) {
+				if (isSameSpecies(genome, pool.getGenomes(thisSpeciesId).stream().findFirst().get())) {
 					genome.setReferenceSpeciesNumber(thisSpeciesId);
 					notDone = false;
 					break;
@@ -40,9 +40,6 @@ public class SpeciationService {
 			if (notDone)
 				markThisGenomeAsNewSpecies(genome);
 		}
-		System.out.print("Species Pop breakdown: ");
-		pool.getSpeciesIds().forEach(sId -> System.out.print(pool.getAllGenomesOfThisSpecies(sId).size()+","));
-		System.out.println();
 	}
 
 	private void markThisGenomeAsNewSpecies(Genome genome) {
@@ -50,9 +47,9 @@ public class SpeciationService {
 	}
 
 	private boolean isSameSpecies(Genome genome, Genome referenceGenome) {
-		List<ConnectionGene> connectionList1 = genome.getConnectionGenesSorted();
+		List<ConnectionGene> connectionList1 = genome.getConnectionGenes();
 		List<ConnectionGene> connectionList2 = referenceGenome
-				.getConnectionGenesSorted();
+				.getConnectionGenes();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[connectionList2.size()];

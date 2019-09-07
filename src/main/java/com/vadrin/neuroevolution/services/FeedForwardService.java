@@ -16,22 +16,22 @@ public class FeedForwardService {
 
 	protected double[] feedForward(Genome genome, double[] input) throws InvalidInputException {
 		// Validate
-		if (genome.getNodeGenesSorted(NodeGeneType.INPUT).size() != input.length)
+		if (genome.getNodeGenes(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
 
 		//cleanup any previous run stale outputs
-		genome.getNodeGenesSorted().forEach(n -> n.setOutput(0d));
+		genome.getNodeGenes().forEach(n -> n.setOutput(0d));
 
 		// Directly set for inputnodes
-		List<NodeGene> inputNodeGenes = genome.getNodeGenesSorted(NodeGeneType.INPUT);
+		List<NodeGene> inputNodeGenes = genome.getNodeGenes(NodeGeneType.INPUT);
 		for (int i = 0; i < input.length; i++) {
 			inputNodeGenes.get(i).setOutput(input[i]);
 		}
 
 		// Process for hiddennodes in squence
-		List<NodeGene> hiddenNodeGenes = genome.getNodeGenesSorted(NodeGeneType.HIDDEN);
+		List<NodeGene> hiddenNodeGenes = genome.getNodeGenes(NodeGeneType.HIDDEN);
 		for (NodeGene hiddenNodeGene : hiddenNodeGenes) {
-			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenesSorted().stream()
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenes().stream()
 					.filter(thisConn -> thisConn.getToNode().getId() == hiddenNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
@@ -48,9 +48,9 @@ public class FeedForwardService {
 		}
 
 		// Process for outputnodes
-		List<NodeGene> outputNodeGenes = genome.getNodeGenesSorted(NodeGeneType.OUTPUT);
+		List<NodeGene> outputNodeGenes = genome.getNodeGenes(NodeGeneType.OUTPUT);
 		for (NodeGene outputNodeGene : outputNodeGenes) {
-			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenesSorted().stream()
+			Iterator<ConnectionGene> relavantConnGenesIterator = genome.getConnectionGenes().stream()
 					.filter(thisConn -> thisConn.getToNode().getId() == outputNodeGene.getId()).iterator();
 			double sumOfInput = 0;
 			while (relavantConnGenesIterator.hasNext()) {
@@ -64,7 +64,7 @@ public class FeedForwardService {
 		}
 
 		// return the output values
-		List<NodeGene> toReturnList = genome.getNodeGenesSorted(NodeGeneType.OUTPUT);
+		List<NodeGene> toReturnList = genome.getNodeGenes(NodeGeneType.OUTPUT);
 		double[] toReturnArray = new double[toReturnList.size()];
 		for (int i = 0; i < toReturnList.size(); i++) {
 			toReturnArray[i] = toReturnList.get(i).getOutput();
