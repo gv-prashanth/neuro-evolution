@@ -27,7 +27,7 @@ public class Genome {
 		this.birthGeneration = birthGeneration;
 		this.fitnessLog = new HashMap<Integer, Double>();
 	}
-	
+
 	public void addFitnessLog(int generation) {
 		fitnessLog.put(Integer.valueOf(generation), Double.valueOf(getFitnessScore()));
 	}

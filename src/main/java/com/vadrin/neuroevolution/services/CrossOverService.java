@@ -23,7 +23,7 @@ public class CrossOverService {
 	private static final double CHANCE_FOR_INTER_SPECIES_MATING = 0.001d;
 
 	protected void crossOver(Pool pool) {
-		//System.out.println("pop before crossover " + pool.getGenomes().size());
+		// System.out.println("pop before crossover " + pool.getGenomes().size());
 
 		// Inter species mating
 		Map<Genome, Genome> fatherMotherPairs = new HashMap<Genome, Genome>();
@@ -48,7 +48,7 @@ public class CrossOverService {
 			Genome newGenome = constructGenomeByCrossingOver(pool, f, m);
 			newGenome.setReferenceSpeciesNumber(f.getReferenceSpeciesNumber());
 		});
-		//System.out.println("pop after inter crossover " + pool.getGenomes().size());
+		// System.out.println("pop after inter crossover " + pool.getGenomes().size());
 
 		// Intra species mating
 		pool.getSpecies().forEach(thisSpeciesId -> {
@@ -58,36 +58,44 @@ public class CrossOverService {
 				// pick any two random genomes in this species
 				// and then cross over between them
 				// and then put them back in the pool with same speciesid
-				Genome parent1 = pool.getGenomes(thisSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst().get();
-				Genome parent2 = pool.getGenomes(thisSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst().get();
+				Genome parent1 = pool.getGenomes(thisSpeciesId).stream()
+						.skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst()
+						.get();
+				Genome parent2 = pool.getGenomes(thisSpeciesId).stream()
+						.skip((int) MathService.randomNumber(0, pool.getGenomes(thisSpeciesId).size() - 1)).findFirst()
+						.get();
 				Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 				newGenome.setReferenceSpeciesNumber(thisSpeciesId);
 				i++;
 			}
 		});
-		//System.out.println("pop after intra crossover " + pool.getGenomes().size());
+		// System.out.println("pop after intra crossover " + pool.getGenomes().size());
 		while (pool.getGenomes().size() < pool.getPoolCapacity()) {
 			int randomPos = (int) MathService.randomNumber(0, pool.getSpecies().size() - 1);
 			String randomSpeciesId = pool.getSpecies().stream().skip(randomPos).findAny().get();
 			// pick any two random genomes in this species
 			// and then cross over between them
 			// and then put them back in the pool with same speciesid
-			Genome parent1 = pool.getGenomes(randomSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst().get();
-			Genome parent2 = pool.getGenomes(randomSpeciesId).stream().skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst().get();
+			Genome parent1 = pool.getGenomes(randomSpeciesId).stream()
+					.skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst()
+					.get();
+			Genome parent2 = pool.getGenomes(randomSpeciesId).stream()
+					.skip((int) MathService.randomNumber(0, pool.getGenomes(randomSpeciesId).size() - 1)).findFirst()
+					.get();
 			Genome newGenome = constructGenomeByCrossingOver(pool, parent1, parent2);
 			newGenome.setReferenceSpeciesNumber(randomSpeciesId);
 		}
-		//System.out.println("BIG PROBLEM AVERTED "+times+" times");
+		// System.out.println("BIG PROBLEM AVERTED "+times+" times");
 	}
 
-	//TODO: Need to visit this
+	// TODO: Need to visit this
 	private int calculateSpeciesPopToReachForThisSpecies(Pool pool, String thisSpeciesId) {
 		return (int) ((((double) pool.getPoolCapacity()) / pool.getGenomes().size())
 				* pool.getGenomes(thisSpeciesId).size());
 	}
 
 	private Genome constructGenomeByCrossingOver(Pool pool, final Genome genome1, final Genome genome2) {
-		//TODO: Need to remove this code
+		// TODO: Need to remove this code
 		if (pool.getGenomes().size() >= pool.getPoolCapacity()) {
 			System.out.println("BIG ISSUE HERE... NEED TO SOLVE IT BADLY");
 			return null;

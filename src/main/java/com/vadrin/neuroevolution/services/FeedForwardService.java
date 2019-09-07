@@ -19,7 +19,7 @@ public class FeedForwardService {
 		if (genome.getNodeGenes(NodeGeneType.INPUT).size() != input.length)
 			throw new InvalidInputException();
 
-		//cleanup any previous run stale outputs
+		// cleanup any previous run stale outputs
 		genome.getNodeGenes().forEach(n -> n.setOutput(0d));
 
 		// Directly set for inputnodes
@@ -40,7 +40,8 @@ public class FeedForwardService {
 				// do only if its enabled... else you should skip it..
 				if (tempConnGene.isEnabled()) {
 					sumOfInput += tempConnGene.getWeight()
-							* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
+							* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId())
+									.getOutput();
 				}
 			}
 			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
@@ -56,8 +57,8 @@ public class FeedForwardService {
 			while (relavantConnGenesIterator.hasNext()) {
 				ConnectionGene tempConnGene = relavantConnGenesIterator.next();
 				// totalInput = (prevNodeOutput * connectionWeight) + Over all connections
-				sumOfInput += tempConnGene.getWeight()
-						* genome.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
+				sumOfInput += tempConnGene.getWeight() * genome
+						.getNodeGene(genome.getConnectionGene(tempConnGene.getId()).getFromNode().getId()).getOutput();
 			}
 			double finalOutput = MathService.applySigmiodActivationFunction(sumOfInput);
 			outputNodeGene.setOutput(finalOutput);

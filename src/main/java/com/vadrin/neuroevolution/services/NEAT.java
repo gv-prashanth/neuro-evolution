@@ -13,7 +13,7 @@ public class NEAT {
 	// TODO: Somehow i need to add the bias logic... it wont be coming as part
 	// of inputs array but still ill need to accommodate. Read the comments on the
 	// mutate method regarding the bias nodes.
-	
+
 	@Autowired
 	private FeedForwardService feedForwardService;
 

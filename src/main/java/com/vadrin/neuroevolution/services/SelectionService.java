@@ -23,15 +23,15 @@ public class SelectionService {
 		// and DELETE the others
 		// If yes how many to delete? and what to do after deleting?
 		pool.getSpecies().forEach(thisSpeciesId -> {
-			if (isSpeciesStagnated(pool, thisSpeciesId) && !getChampions(pool).stream().anyMatch(
-					g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))) {
+			if (isSpeciesStagnated(pool, thisSpeciesId) && !getChampions(pool).stream()
+					.anyMatch(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))) {
 				// Remove all species whose average fitness didnt increase since 15 generations
-				System.out.println("species stagnanted " + thisSpeciesId+". Killing off all genomes in this species.");
+				System.out
+						.println("species stagnanted " + thisSpeciesId + ". Killing off all genomes in this species.");
 				pool.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 						.forEach(g -> pool.killGenome(g));
 			} else {
-				pool.getGenomes().stream()
-						.filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				pool.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
 						.sorted((a, b) -> Double.compare(a.getFitnessScore(), b.getFitnessScore()))
 						.limit((long) ((1 - fractionOfChampionsToSelectInThisSpecies(thisSpeciesId))
 								* (pool.getGenomes().stream()
@@ -41,7 +41,7 @@ public class SelectionService {
 			}
 		});
 	}
-	
+
 	private Set<Genome> getChampions(Pool pool) {
 		Set<Genome> toReturn = new HashSet<Genome>();
 
@@ -51,8 +51,8 @@ public class SelectionService {
 
 		// Pick top in each species
 		pool.getSpecies().stream().forEach(s -> {
-			if (pool.getGenomes(
-					s).size() > MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED) {
+			if (pool.getGenomes(s)
+					.size() > MINIMUM_NUMBER_OF_GENOMES_IN_A_SPECIES_SO_THAT_ITS_CHAMPION_IS_LEFT_UNHARMED) {
 				pool.getGenomes().stream().filter(g -> g.getReferenceSpeciesNumber().equalsIgnoreCase(s))
 						.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 						.limit(NUMBER_OF_CHAMPIONS_TO_BE_LEFT_UNHARMED_IN_EACH_SPECIES)
@@ -87,8 +87,9 @@ public class SelectionService {
 			return true;
 		return false;
 	}
-	
+
 	private Genome getMaxFitGenomeOfThisSpecies(Pool pool, String thisSpeciesId) {
-		return pool.getGenomes(thisSpeciesId).stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
+		return pool.getGenomes(thisSpeciesId).stream()
+				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst().get();
 	}
 }

@@ -48,8 +48,7 @@ public class SpeciationService {
 
 	private boolean isSameSpecies(Genome genome, Genome referenceGenome) {
 		List<ConnectionGene> connectionList1 = genome.getConnectionGenes();
-		List<ConnectionGene> connectionList2 = referenceGenome
-				.getConnectionGenes();
+		List<ConnectionGene> connectionList2 = referenceGenome.getConnectionGenes();
 		ConnectionGene[] connectionGenes1 = new ConnectionGene[connectionList1.size()];
 		connectionGenes1 = connectionList1.toArray(connectionGenes1);
 		ConnectionGene[] connectionGenes2 = new ConnectionGene[connectionList2.size()];

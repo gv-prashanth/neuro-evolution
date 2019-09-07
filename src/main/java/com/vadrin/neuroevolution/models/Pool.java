@@ -33,7 +33,7 @@ public class Pool {
 		}
 	}
 
-	//FromSampleConnectionGenes
+	// FromSampleConnectionGenes
 	public Genome constructGenome(Set<ConnectionGene> sampleConnectionGenes) {
 		Set<NodeGene> actualNodeGenes = new HashSet<NodeGene>();
 		Set<ConnectionGene> actualConnectionGenes = new HashSet<ConnectionGene>();
@@ -51,8 +51,7 @@ public class Pool {
 				constructedNodeGeneOfFrom = actualNodeGenes.stream()
 						.filter(n -> n.getReferenceNodeNumber() == sampleRefNumberOfFrom).findFirst().get();
 			} else {
-				constructedNodeGeneOfFrom = constructNodeGene(sampleRefNumberOfFrom,
-						sampleTypeOfFrom);
+				constructedNodeGeneOfFrom = constructNodeGene(sampleRefNumberOfFrom, sampleTypeOfFrom);
 				actualNodeGenes.add(constructedNodeGeneOfFrom);
 			}
 
@@ -72,15 +71,15 @@ public class Pool {
 			NodeGene toNodeGene = actualNodeGenes.stream()
 					.filter(n -> n.getReferenceNodeNumber() == sampleConn.getToNode().getReferenceNodeNumber())
 					.findFirst().get();
-			actualConnectionGenes.add(constructConnectionGene(
-					sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
+			actualConnectionGenes
+					.add(constructConnectionGene(sampleConn.getReferenceInnovationNumber(), fromNodeGene, toNodeGene));
 		});
 		Genome toReturn = new Genome(actualNodeGenes, actualConnectionGenes, referenceGenerationCounter);
 		genomes.add(toReturn);
 		return toReturn;
 	}
-	
-	//Random
+
+	// Random
 	private Genome constructGenome(int inputNodesSize, int outputNodesSize) {
 		Set<NodeGene> inputNodeGenes = new HashSet<NodeGene>();
 		Set<NodeGene> outputNodeGenes = new HashSet<NodeGene>();
@@ -108,10 +107,9 @@ public class Pool {
 		return genome;
 	}
 
-	//Copy
+	// Copy
 	private Genome constructGenome(Genome oriGenome) {
-		Genome copyGenome = constructGenome(
-				oriGenome.getConnectionGenes().stream().collect(Collectors.toSet()));
+		Genome copyGenome = constructGenome(oriGenome.getConnectionGenes().stream().collect(Collectors.toSet()));
 		genomes.add(copyGenome);
 		return copyGenome;
 	}
@@ -120,52 +118,52 @@ public class Pool {
 		genomes.remove(genome);
 	}
 
-	//WithReferenceNodeNumber
-	public NodeGene constructNodeGene(Genome genome, int referenceNodeNumber,
-			NodeGeneType type) {
+	// WithReferenceNodeNumber
+	public NodeGene constructNodeGene(Genome genome, int referenceNodeNumber, NodeGeneType type) {
 		return constructNodeGene(referenceNodeNumber, type);
 	}
 
-	//Random
+	// Random
 	public NodeGene constructNodeGene(NodeGeneType type) {
 		referenceNodeCounter++;
 		NodeGene toReturn = new NodeGene(referenceNodeCounter, type);
 		return toReturn;
 	}
 
-	//WithReferenceNodeNumber
+	// WithReferenceNodeNumber
 	public NodeGene constructNodeGene(int referenceNodeNumber, NodeGeneType type) {
 		NodeGene toReturn = new NodeGene(referenceNodeNumber, type);
 		return toReturn;
 	}
-	
-	//WithNewInnovationNumber
+
+	// WithNewInnovationNumber
 	public ConnectionGene constructConnectionGene(NodeGene fromNodeGene, NodeGene toNodeGene) {
 		return constructConnectionGene(fromNodeGene, toNodeGene, MathService.randomNumber(
 				MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND));
 	}
 
-	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
-	//WithNewInnovationNumber
-	public ConnectionGene constructConnectionGene(NodeGene fromNodeGene, NodeGene toNodeGene,
-			double weight) {
+	// Sometimes as part of mutate add node, the from will be more than to reference
+	// number, which is fine.
+	// WithNewInnovationNumber
+	public ConnectionGene constructConnectionGene(NodeGene fromNodeGene, NodeGene toNodeGene, double weight) {
 		referenceInnovationCounter++;
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene,
 				referenceInnovationCounter);
 		return toReturn;
 	}
 
-	//Sometimes as part of mutate add node, the from will be more than to reference number, which is fine.
-	//WithExistingInnovationNumber
-	public ConnectionGene constructConnectionGene(int referenceInnovationNumber,
-			double weight, NodeGene fromNodeGene, NodeGene toNodeGene) {
+	// Sometimes as part of mutate add node, the from will be more than to reference
+	// number, which is fine.
+	// WithExistingInnovationNumber
+	public ConnectionGene constructConnectionGene(int referenceInnovationNumber, double weight, NodeGene fromNodeGene,
+			NodeGene toNodeGene) {
 		ConnectionGene toReturn = new ConnectionGene(weight, true, fromNodeGene, toNodeGene, referenceInnovationNumber);
 		return toReturn;
 	}
 
-	//WithExistingInnovationNumber
-	public ConnectionGene constructConnectionGene(int referenceInnovationNumber,
-			NodeGene fromNodeGene, NodeGene toNodeGene) {
+	// WithExistingInnovationNumber
+	public ConnectionGene constructConnectionGene(int referenceInnovationNumber, NodeGene fromNodeGene,
+			NodeGene toNodeGene) {
 		return constructConnectionGene(referenceInnovationNumber, MathService
 				.randomNumber(MutationService.X_RANDOM_WEIGHT_LOWER_BOUND, MutationService.X_RANDOM_WEIGHT_UPPER_BOUND),
 				fromNodeGene, toNodeGene);
@@ -197,19 +195,22 @@ public class Pool {
 		return innovationInformation;
 	}
 
-	public void addInnovationInformation(Integer referenceInnovationNumber, Integer createdReferenceNodeNumber, Integer createdFromReferenceInnovationNumber, Integer createdToReferenceInnovationNumber) {
-		innovationInformation.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber, createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
+	public void addInnovationInformation(Integer referenceInnovationNumber, Integer createdReferenceNodeNumber,
+			Integer createdFromReferenceInnovationNumber, Integer createdToReferenceInnovationNumber) {
+		innovationInformation.add(new InnovationInformation(referenceInnovationNumber, createdReferenceNodeNumber,
+				createdFromReferenceInnovationNumber, createdToReferenceInnovationNumber));
 	}
-	
+
 	public List<Genome> getGenomes() {
-		return genomes.stream()
-				.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
+		return genomes.stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore()))
 				.collect(Collectors.toList());
 	}
 
 	public Set<Genome> getGenomes(String thisSpeciesId) {
 		return genomes.stream()
-				.filter(genome -> genome.getReferenceSpeciesNumber()!=null && genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId)).collect(Collectors.toSet());
+				.filter(genome -> genome.getReferenceSpeciesNumber() != null
+						&& genome.getReferenceSpeciesNumber().equalsIgnoreCase(thisSpeciesId))
+				.collect(Collectors.toSet());
 	}
 
 }

@@ -40,8 +40,9 @@ public class MutationService {
 				// everyone should not get mutated.. the best ones should be left as is..else
 				// your best fitness will go down if you keep mutating
 				// your best guy
-				Genome bestGenomeInPool = pool.getGenomes().stream().sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1)
-						.findFirst().get();
+				Genome bestGenomeInPool = pool.getGenomes().stream()
+						.sorted((a, b) -> Double.compare(b.getFitnessScore(), a.getFitnessScore())).limit(1).findFirst()
+						.get();
 				if (!genome.getId().equalsIgnoreCase(bestGenomeInPool.getId())) {
 					Iterator<MutationType> mTypeI = Arrays.asList(MutationType.class.getEnumConstants()).stream()
 							.iterator();
@@ -100,22 +101,32 @@ public class MutationService {
 			int randomConn = (int) MathService.randomNumber(0d, genome.getConnectionGenes().size());
 			// select a random connection gene to add the node in between
 			ConnectionGene connectionGene = genome.getConnectionGenes().get(randomConn);
-			if(pool.getInnovationInformation().stream().anyMatch(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber())) {
-				InnovationInformation referenceInnovationInformation = pool.getInnovationInformation().stream().filter(i -> i.getReferenceInnovationNumber()==connectionGene.getReferenceInnovationNumber()).findFirst().get();
-				if(!genome.getNodeGenes().stream().anyMatch(n -> n.getReferenceNodeNumber()==referenceInnovationInformation.getCreatedReferenceNodeNumber())) {
-					NodeGene newNodeGene = pool.constructNodeGene(genome, referenceInnovationInformation.getCreatedReferenceNodeNumber(),
-							NodeGeneType.HIDDEN);
+			if (pool.getInnovationInformation().stream()
+					.anyMatch(i -> i.getReferenceInnovationNumber() == connectionGene.getReferenceInnovationNumber())) {
+				InnovationInformation referenceInnovationInformation = pool.getInnovationInformation().stream()
+						.filter(i -> i.getReferenceInnovationNumber() == connectionGene.getReferenceInnovationNumber())
+						.findFirst().get();
+				if (!genome.getNodeGenes().stream().anyMatch(n -> n
+						.getReferenceNodeNumber() == referenceInnovationInformation.getCreatedReferenceNodeNumber())) {
+					NodeGene newNodeGene = pool.constructNodeGene(genome,
+							referenceInnovationInformation.getCreatedReferenceNodeNumber(), NodeGeneType.HIDDEN);
 					genome.addNode(newNodeGene);
 					// Now that the node is added. Lets make connections and also lets not forget to
 					// disable the prev connection
 					connectionGene.setEnabled(false);
-					ConnectionGene firstHalf = pool.constructConnectionGene(referenceInnovationInformation.getCreatedFromReferenceInnovationNumber(), 1.0d, connectionGene.getFromNode(), newNodeGene);
-					ConnectionGene secondHalf = pool.constructConnectionGene(referenceInnovationInformation.getCreatedToReferenceInnovationNumber(), connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
+					ConnectionGene firstHalf = pool.constructConnectionGene(
+							referenceInnovationInformation.getCreatedFromReferenceInnovationNumber(), 1.0d,
+							connectionGene.getFromNode(), newNodeGene);
+					ConnectionGene secondHalf = pool.constructConnectionGene(
+							referenceInnovationInformation.getCreatedToReferenceInnovationNumber(),
+							connectionGene.getWeight(), newNodeGene, connectionGene.getToNode());
 					genome.addConnection(firstHalf);
-					genome.addConnection(secondHalf);	
-				}else {
-					//TODO: This needs to be handled. may be try another connection? or lets not even mutate this genome? need to take a call
-					System.out.println("THIS CONNECTION IS ALREADY MUTATED IN GENOME "+genome.getId()+" CANT MUTATE AGAIN. WHAT TO DO NOW?");
+					genome.addConnection(secondHalf);
+				} else {
+					// TODO: This needs to be handled. may be try another connection? or lets not
+					// even mutate this genome? need to take a call
+					System.out.println("THIS CONNECTION IS ALREADY MUTATED IN GENOME " + genome.getId()
+							+ " CANT MUTATE AGAIN. WHAT TO DO NOW?");
 				}
 			} else {
 				NodeGene newNodeGene = pool.constructNodeGene(NodeGeneType.HIDDEN);
@@ -123,13 +134,15 @@ public class MutationService {
 				// Now that the node is added. Lets make connections and also lets not forget to
 				// disable the prev connection
 				connectionGene.setEnabled(false);
-				ConnectionGene firstHalf = pool.constructConnectionGene(connectionGene.getFromNode(),
-						newNodeGene, 1.0d);
-				ConnectionGene secondHalf = pool.constructConnectionGene(newNodeGene,
-						connectionGene.getToNode(), connectionGene.getWeight());
+				ConnectionGene firstHalf = pool.constructConnectionGene(connectionGene.getFromNode(), newNodeGene,
+						1.0d);
+				ConnectionGene secondHalf = pool.constructConnectionGene(newNodeGene, connectionGene.getToNode(),
+						connectionGene.getWeight());
 				genome.addConnection(firstHalf);
 				genome.addConnection(secondHalf);
-				pool.addInnovationInformation(connectionGene.getReferenceInnovationNumber(), newNodeGene.getReferenceNodeNumber(), firstHalf.getReferenceInnovationNumber(), secondHalf.getReferenceInnovationNumber());
+				pool.addInnovationInformation(connectionGene.getReferenceInnovationNumber(),
+						newNodeGene.getReferenceNodeNumber(), firstHalf.getReferenceInnovationNumber(),
+						secondHalf.getReferenceInnovationNumber());
 			}
 		}
 	}
@@ -145,8 +158,8 @@ public class MutationService {
 				for (int i = 0; i < genome.getNodeGenes().size(); i++) {
 					allNumbers.add(i);
 				}
-				int randNodePos2 = allNumbers.stream().filter(
-						i -> i != randNodePos1 && ((n1.getType() != genome.getNodeGenes().get(i).getType())
+				int randNodePos2 = allNumbers.stream()
+						.filter(i -> i != randNodePos1 && ((n1.getType() != genome.getNodeGenes().get(i).getType())
 								|| (n1.getType() == genome.getNodeGenes().get(i).getType()
 										&& n1.getType() == NodeGeneType.HIDDEN)))
 						.findAny().get();
@@ -158,8 +171,10 @@ public class MutationService {
 			if ((n1.getType() != n2.getType())
 					|| (n1.getType() == n2.getType() && n1.getType() == NodeGeneType.HIDDEN)) {
 
-				//TODO: I dont think this logic is necessary. Like we learnt in mutationaddnode, sometimes a higher nodenumber can point to lower nodenumber.
-				// But the reason why i have left below is that without this logic, a output can point back to hidden or input which is wrong
+				// TODO: I dont think this logic is necessary. Like we learnt in
+				// mutationaddnode, sometimes a higher nodenumber can point to lower nodenumber.
+				// But the reason why i have left below is that without this logic, a output can
+				// point back to hidden or input which is wrong
 				NodeGene from = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n1 : n2;
 				NodeGene to = n1.getReferenceNodeNumber() < n2.getReferenceNodeNumber() ? n2 : n1;
 
@@ -168,7 +183,8 @@ public class MutationService {
 					ConnectionGene toAdd = null;
 					try {
 						toAdd = pool.constructConnectionGene(
-								getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(pool, from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
+								getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(pool,
+										from.getReferenceNodeNumber(), to.getReferenceNodeNumber()),
 								from, to);
 					} catch (NoSuchElementException e) {
 						toAdd = pool.constructConnectionGene(from, to);
@@ -178,22 +194,23 @@ public class MutationService {
 			}
 		}
 	}
-	
-	//TODO: This needs to be removed. it wont always give valid answers
-	private int getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(Pool pool, int fromReferenceNodeNumber, int toReferenceNodeNumber) {
+
+	// TODO: This needs to be removed. it wont always give valid answers
+	private int getInnovationNumberOnlyAsPerCurrentGenomesInThePoolAndNotPastGenomes(Pool pool,
+			int fromReferenceNodeNumber, int toReferenceNodeNumber) {
 		Iterator<Genome> allGenomes = pool.getGenomes().iterator();
 		while (allGenomes.hasNext()) {
 			Genome thisGenome = allGenomes.next();
 			Iterator<ConnectionGene> allConnections = thisGenome.getConnectionGenes().iterator();
 			while (allConnections.hasNext()) {
 				ConnectionGene thisConnection = allConnections.next();
-				if (thisConnection.getFromNode().getReferenceNodeNumber() == fromReferenceNodeNumber && thisConnection.getToNode()
-						.getReferenceNodeNumber() == toReferenceNodeNumber) {
+				if (thisConnection.getFromNode().getReferenceNodeNumber() == fromReferenceNodeNumber
+						&& thisConnection.getToNode().getReferenceNodeNumber() == toReferenceNodeNumber) {
 					return thisConnection.getReferenceInnovationNumber();
 				}
 			}
 		}
 		throw new NoSuchElementException();
 	}
-	
+
 }
